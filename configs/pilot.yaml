@@ -1,0 +1,12 @@
+split: train
+num_questions: 50
+seed: 0
+spending_cap_usd: 50
+models:
+  arguer: claude-sonnet-5-5
+  judge: claude-haiku-5-5
+protocol:
+  rounds: 3
+  debate_words_per_turn: 150
+  consultancy_words_per_turn: 300
+  judge_votes: 3
