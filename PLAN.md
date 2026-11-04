@@ -24,9 +24,11 @@ The experiment is a 2×2 comparison: debate or consultancy, each with an unbiase
 
 ### Dataset
 
-Use [QuALITY v1.0.1](https://github.com/nyu-mll/quality), keeping Project Gutenberg stories and questions marked `difficult=1`. Keep only questions where every untimed annotator chose the gold answer and rated the question unambiguous. Pair the correct answer with the most-selected `untimed_eval3_distractor`.
+Use [QuALITY v1.0.1](https://github.com/nyu-mll/quality), keeping Project Gutenberg stories and questions marked `difficult=1`. Keep only questions where every untimed annotator chose the gold answer and rated the question unambiguous. Following Khan et al.'s code, also require a mean context rating (`untimed_eval2_context`) of at least 1.5 and a writer label that matches the gold label. Pair the correct answer with the option untimed annotators most often named as best distractor, ignoring votes for the gold answer and breaking ties by lowest option number. The data file names this field `untimed_best_distractor`, even though the QuALITY docs call it `untimed_eval3_distractor`.
 
-Pilot and tune on the train split only. Run the locked experiment once on the dev split, which gave Khan et al. 291 questions. The exact count here may differ, so confirm it on November 4. Test labels aren't public.
+Pilot and tune on the train split only. Run the locked experiment once on the dev split. Test labels aren't public.
+
+**Counts, confirmed November 4:** train has 461 questions from 114 stories, and dev has 350 questions from 83 stories. Khan et al. reported 291, but their default settings pool train with dev and keep one question per story, so the counts aren't directly comparable. At about $0.30 per question, the dev run costs about $105.
 
 ### Conditions
 
