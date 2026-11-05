@@ -37,3 +37,7 @@ Entry format:
 ## 2026-11-05: Verify Day 4
 - **Claude:** Recorded Darrel's verification.
 - **Darrel:** Ran the test suite and checked the results for the Day 4 `quotes.py` work, and approved committing it with the whole-word rule.
+
+## 2026-11-05: Report draft, next-experiment section
+- **Claude:** Committed the draft at Darrel's request. Did not write or edit it.
+- **Darrel:** Wrote the report's section headings and a first draft of the "Next experiment" section: rejecting both answers and synthesizing an answer, with how to score each and how hard it is.
