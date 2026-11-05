@@ -19,3 +19,4 @@ def test_final_config_runs_on_dev_only():
     assert final["split"] == "dev"
     assert pilot["protocol"] == final["protocol"]
     assert pilot["models"] == final["models"]
+    assert pilot["effort"] == final["effort"]

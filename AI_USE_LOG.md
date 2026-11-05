@@ -21,3 +21,7 @@ Entry format:
 ## 2026-11-04: Verify Days 1 and 2
 - **Claude:** Recorded Darrel's verification.
 - **Darrel:** Confirmed that the Day 1 smoke test (`scripts/smoke_test.py`) ran and passed on November 3. Ran `uv run pytest` on November 4 and checked the results for the Day 2 data work.
+
+## 2026-11-05: Write `llm.py` with cache, logging, and cost tracking (Day 3)
+- **Claude:** Checked the current Claude API reference for Sonnet 5.5 and Haiku 5.5. Neither accepts temperature or a seed, and thinking is always on. Wrote the Day 3 plan, `llm.py` (cache keyed by request plus sample index, JSONL call log, cost calculation, spending cap that still allows cache hits, refusals recorded without retry, refusal fallbacks off), and `tests/test_llm.py`. Pinned effort in both configs. Ran one approved Haiku call twice to confirm the second came from the cache (cost $0.0000046).
+- **Darrel:** Approved the Day 3 plan and the tiny paid check.

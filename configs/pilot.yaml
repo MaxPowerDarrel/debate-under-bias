@@ -5,6 +5,9 @@ spending_cap_usd: 50
 models:
   arguer: claude-sonnet-5-5
   judge: claude-haiku-5-5
+effort:  # Pinned to each model's default so it is recorded, not implied
+  arguer: high
+  judge: medium
 protocol:
   rounds: 3
   debate_words_per_turn: 150
