@@ -67,3 +67,29 @@ Done when a repeated call is served from the cache.
 - Real check: the same Haiku 5.5 call was made twice. The first was a paid API call ($0.0000046). The second was served from the cache with no API call, and the log shows `cached: true`, a cost of $0, and the original request ID.
 - Usage data reports `output_tokens_details.thinking_tokens`, so the Day 8 pilot can measure thinking cost per role directly.
 - Effort is now pinned in both configs (arguer `high`, judge `medium`), and a test checks that pilot and final match.
+
+## Day 4 (Fri, Nov 6, started Nov 5): `quotes.py` and its tests
+
+Done when the quote tests pass. Darrel also reads Kenton et al.
+
+### Reference: Khan et al.'s strict verification (`web/backend/services/parser.py`, MIT)
+- Normalize both the quote and the story: curly quotes become straight, all ASCII punctuation is removed, text is lowercased, and runs of whitespace become one space.
+- A quote is verified only if its normalized text appears as a contiguous substring of the normalized story.
+- Verified quotes are re-tagged `<v_quote>` and unverified ones `<u_quote>`. Any `v_quote` or `u_quote` tags already in the text are first turned back into `<quote>`, so a debater can't mark its own quote as verified.
+
+### Plan
+- [x] `normalize(text)`: Khan's rule, plus en and em dashes and the ellipsis character treated as punctuation. Punctuation becomes a space instead of being deleted, so "word—word" and "word - word" normalize the same way. Those are non-ASCII, so Khan's rule leaves them in and a correct quote fails if the model writes "-" or "...".
+- [x] `verify(argument, story) -> Verified(text, verified, unverified)`: strip any debater-written `v_quote`/`u_quote` tags, then check each `<quote>…</quote>`, including quotes that span lines.
+- [x] Keep Khan's strict rule with no fuzzy matching. A quote that skips text with "..." counts as unverified. No minimum length, matching Khan.
+- [x] Leave an unclosed `<quote>` as plain text. It's never verified.
+- [x] Return counts so the analysis can report verified and unverified quotes per role (needed for the Gate 3 bias check).
+- [x] Tests: exact match, changes in case, punctuation, whitespace, and curly quotes, dashes, a quote that isn't in the story, an elided quote, faked `v_quote` tags, multi-line quotes, multiple quotes, unclosed tags, an empty quote, and one real QuALITY story.
+- [x] Added during the build and not in the approved plan: quotes must match whole words, so "he ran" can't match inside "she ranked". Khan's plain substring check allows that.
+- [x] Add an entry to `AI_USE_LOG.md`.
+
+### Left for `protocols.py` (Day 5)
+- Word limits must never cut a quote in half. Khan closes a cut-off quote tag. Decide when truncation is built.
+
+### Review
+- `uv run pytest`: 57 passed, including 21 new tests in `tests/test_quotes.py`. One of them checks 20 sentences from a real train story; all of them verify.
+- Three departures from Khan, each explained in the `quotes.py` docstring: punctuation becomes a space, an empty quote is unverified, and quotes must match whole words.

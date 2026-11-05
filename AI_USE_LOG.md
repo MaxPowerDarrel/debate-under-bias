@@ -25,3 +25,15 @@ Entry format:
 ## 2026-11-05: Write `llm.py` with cache, logging, and cost tracking (Day 3)
 - **Claude:** Checked the current Claude API reference for Sonnet 5.5 and Haiku 5.5. Neither accepts temperature or a seed, and thinking is always on. Wrote the Day 3 plan, `llm.py` (cache keyed by request plus sample index, JSONL call log, cost calculation, spending cap that still allows cache hits, refusals recorded without retry, refusal fallbacks off), and `tests/test_llm.py`. Pinned effort in both configs. Ran one approved Haiku call twice to confirm the second came from the cache (cost $0.0000046).
 - **Darrel:** Approved the Day 3 plan and the tiny paid check.
+
+## 2026-11-05: Verify Day 3
+- **Claude:** Recorded Darrel's verification.
+- **Darrel:** Ran the test suite and checked the results for the Day 3 `llm.py` work.
+
+## 2026-11-05: Write `quotes.py` and its tests (Day 4)
+- **Claude:** Read Khan et al.'s strict quote check (`llm_debate`, MIT) and wrote the Day 4 plan. Wrote `quotes.py`, which follows Khan's normalize-then-match rule with three changes: punctuation becomes a space and dashes count as punctuation, an empty quote is unverified, and quotes must match whole words. The whole-word rule was added during the build, beyond the approved plan. Wrote `tests/test_quotes.py`.
+- **Darrel:** Approved the Day 4 plan. Reading Kenton et al.: not recorded.
+
+## 2026-11-05: Verify Day 4
+- **Claude:** Recorded Darrel's verification.
+- **Darrel:** Ran the test suite and checked the results for the Day 4 `quotes.py` work, and approved committing it with the whole-word rule.
