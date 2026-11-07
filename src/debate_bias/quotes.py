@@ -47,6 +47,11 @@ def is_in_story(quote: str, normalized_story: str) -> bool:
     return f" {quote} " in f" {normalized_story} "
 
 
+def reset_tags(text: str) -> str:
+    """Turn any `v_quote`/`u_quote` tags an arguer wrote back into `quote`, so it can't self-verify."""
+    return _EXISTING_TAG.sub(r"<\1quote>", text)
+
+
 @dataclass(frozen=True)
 class Verified:
     text: str  # The argument with every complete quote re-tagged as v_quote or u_quote
@@ -70,5 +75,5 @@ def verify(argument: str, story: str) -> Verified:
         unverified.append(quote)
         return f"<u_quote>{quote}</u_quote>"
 
-    text = _QUOTE.sub(retag, _EXISTING_TAG.sub(r"<\1quote>", argument))
+    text = _QUOTE.sub(retag, reset_tags(argument))
     return Verified(text, verified, unverified)

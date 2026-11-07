@@ -41,3 +41,15 @@ Entry format:
 ## 2026-11-05: Report draft, next-experiment section
 - **Claude:** Committed the draft at Darrel's request. Did not write or edit it.
 - **Darrel:** Wrote the report's section headings and a first draft of the "Next experiment" section: rejecting both answers and synthesizing an answer, with how to score each and how hard it is.
+
+## 2026-11-06: Verify Day 4 reading
+- **Claude:** Recorded Darrel's confirmation.
+- **Darrel:** Confirmed that he finished the Day 4 reading of Kenton et al.
+
+## 2026-11-06: Write `protocols.py` and the arguer prompts (Day 5)
+- **Claude:** Read Khan et al.'s debater and consultant prompts and code (`llm_debate`, MIT) and wrote the Day 5 plan. Wrote `prompts/debater_v1/` and `prompts/consultant_v1/`, adapted from Khan's wording. Wrote `protocols.py`: simultaneous debate, consultancy on both answers, transcripts stored by side, and a word limit that never cuts through a quote. Added `reset_tags` to `quotes.py`, `max_tokens.arguer` to both configs, `tests/test_protocols.py`, and `scripts/run_one_question.py`. Ran the approved paid check on one train question ($0.35), read the transcripts, and wrote down issues for Day 9.
+- **Darrel:** Approved the Day 5 plan, including its five design choices and the paid check.
+
+## 2026-11-06: Verify Day 5
+- **Claude:** Recorded Darrel's verification and committed the Day 5 work.
+- **Darrel:** Ran the test suite, read the transcripts from the one-question check, and approved the commit.

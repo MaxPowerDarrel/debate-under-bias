@@ -20,3 +20,4 @@ def test_final_config_runs_on_dev_only():
     assert pilot["protocol"] == final["protocol"]
     assert pilot["models"] == final["models"]
     assert pilot["effort"] == final["effort"]
+    assert pilot["max_tokens"] == final["max_tokens"]

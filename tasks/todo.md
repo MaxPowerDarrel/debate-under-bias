@@ -93,3 +93,46 @@ Done when the quote tests pass. Darrel also reads Kenton et al.
 ### Review
 - `uv run pytest`: 57 passed, including 21 new tests in `tests/test_quotes.py`. One of them checks 20 sentences from a real train story; all of them verify.
 - Three departures from Khan, each explained in the `quotes.py` docstring: punctuation becomes a space, an empty quote is unverified, and quotes must match whole words.
+
+## Day 5 (Sat, Nov 7, started Nov 6): `protocols.py`
+
+Done when one debate and one consultancy run end to end.
+
+### Reference: Khan et al.'s debater and consultant (`core/config/experiment/debaters/v1.yaml`, `consultants/v1.yaml`, `core/agents/debater_quality.py`, MIT)
+- The system prompt gives the role, the word limit, the quote system (`<quote>` tags are checked and shown as `v_quote` or `u_quote` in later rounds), and the judging criteria. The user message gives the question, both answers, the story, the transcript so far, and the request for this turn.
+- Output is `<thinking>…</thinking><argument>…</argument>`, and only `<argument>` goes into the transcript.
+- Word limits: the prompt asks for 100 (debate) or 200 (consultancy) words. An argument counts as valid at 70–150 or 140–300 words and must contain a quote. Khan draws extra candidates until one is valid, then cuts to `max_words` and closes any quote the cut splits.
+- Consultancy rounds after the first answer judge questions. We have no judge questions.
+
+### Plan
+- [x] **Prompts as files:** `prompts/debater_v1.md` and `prompts/consultant_v1.md`, adapted from Khan's wording, using `$placeholders` (`string.Template`, since stories can contain `{}`). The story comes first in the system prompt so a shared prefix can be prompt-cached later.
+- [x] **No `<thinking>` tags:** Sonnet 5.5 always thinks before answering, so we ask only for `<argument>` tags. Thinking tokens are billed as output either way.
+- [x] **Store by side, render per reader:** the transcript stores turns keyed by `correct` or `distractor`. Each debater sees "Your argument" and "Your opponent's argument". The `Debater A/B` labels and the order swap are added when the judge reads it (Day 6). Debaters are told to say "my opponent", never a letter, so swapping the order never contradicts the text.
+- [x] **Simultaneous debate:** in round r, both debaters see only rounds 1 to r−1. A test checks that neither prompt contains the other's round-r argument.
+- [x] **Consultancy:** three 300-word turns from one consultant, each building on its earlier turns. `run_consultancy` takes the side, and a helper runs both sides, so the pair always stays balanced.
+- [x] **Each turn:** take the text inside `<argument>`, apply the word limit, then run `quotes.verify`. Store the raw model text, the final argument, its word count, a `truncated` flag, the verified and unverified quotes, the stop reason, and the cache key.
+- [x] **Word limit:** count words with tags removed. If an argument is over the limit, cut it at the limit. If the cut lands inside a quote, cut before that `<quote>` instead of closing it like Khan does, so no shortened quote ever reaches the judge. Add a "[truncated]" marker. No minimum length and no resampling, which keeps every turn as one cached call. Day 9 revisits this once we see real lengths.
+- [x] **Missing `<argument>` tag or a refusal:** record it and stop that transcript with `status` set to `format_error` or `refused`. No retries today. Day 9 decides how to handle these.
+- [x] **Config:** add `max_tokens.arguer` to both configs. Output is billed by use, so a generous ceiling only stops thinking from being cut off.
+- [x] **Tests with a fake LLM and no API calls:** simultaneous turns, consultancy runs on both answers, word limit, no cut quote, argument extraction, faked `v_quote` tags are reset, refusal and format-error status, story present in arguer prompts, and the transcript serializes to JSON.
+- [x] **Real check (needs approval):** one train question, one debate (6 Sonnet calls) and both consultancies (6 calls). Estimate: 12 calls at about 8–10K input and 1–3K output tokens at standard rates, about $0.30–$0.70, with a $2 cap for this check. Then we read both transcripts.
+- [x] Add an entry to `AI_USE_LOG.md`.
+
+### Not in scope today
+- Judge prompts, A/B labels, and order swaps (`judge.py`, Day 6).
+- The bias rule and informed-arguer prompts (Day 11).
+- Prompt-cache breakpoints and the Batch API (runner work). Prompts are ordered now so they can be added without rewriting them.
+
+### Review
+- `uv run pytest`: 78 passed, including 21 new tests in `tests/test_protocols.py` that use a fake LLM and make no API calls.
+- `quotes.py` now exposes `reset_tags`, and `verify` uses it. Truncation runs after the tag reset, so a faked `v_quote` can't dodge the rule against cutting through a quote.
+- **Real check:** train question `52995_I3M5VUMM_3` (index 0), with one debate and both consultancies. All three transcripts completed with 12 Sonnet calls, no refusals, and no format errors. Cost was **$0.346** at standard rates, under the $2 cap. Output is in `results/pilot/one_question/` (gitignored), and `scripts/run_one_question.py` replays it from the cache for free.
+- **Cost:** each call used about 11–12K input and 300–1,200 output tokens, roughly $0.029 at standard rates. Input is about 75% of that, so prompt caching the story prefix should help more than anything else. At batch rates, 24 calls per question comes to about $0.35, close to the plan's $0.30.
+- **Thinking:** only 3 of 12 calls used any thinking (481–600 tokens). At `high` effort, Sonnet usually answers these prompts without thinking.
+
+### Found in the transcripts, for Day 9 (handle refusals and word limits)
+- **Truncation is common:** 9 of 18 turns went over the limit, by 4–36 words. Khan's prompts ask for fewer words than the hard limit (100 for 150, 200 for 300). Doing the same is probably the fix.
+- **Missing quote tags:** the correct-side consultant used plain quotation marks in rounds 1 and 2, so none of its quotes went through verification. The judge will see them as untagged text.
+- **Elided quotes:** "the Economic Planning Board... will terminate" was correctly marked unverified under the strict rule, and the opposing debater pointed that out in round 2. The strict rule changes how arguers behave, which is worth a line in the report.
+- **No sign of sandbagging:** the distractor arguers argued just as forcefully. One example isn't enough to rule it out.
+- Prompt choice to confirm: the consultant prompt keeps Khan's line, "winning the game is the main objective, not absolute honesty." The debater prompt doesn't have it, which also matches Khan.
