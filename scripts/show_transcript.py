@@ -43,9 +43,10 @@ if args.condition in ("debate", "consultancy"):
     print(f"=== {args.condition}, status {transcript.status}; shown with the correct answer as A ===\n")
     print(render_transcript(transcript, 0))
     for turn in transcript.turns:
-        if turn.truncated or turn.status != "ok":
+        if turn.truncated or turn.status != "ok" or turn.attempts:
+            retried = f", retried after {turn.attempts[0]['status']}" if turn.attempts else ""
             print(f"\n[round {turn.round} {turn.side}: {turn.status}, {turn.word_count} words, "
-                  f"truncated={turn.truncated}]")
+                  f"truncated={turn.truncated}{retried}]")
 
 for v in verdicts:
     if v["question_id"] == qid and v["condition"] == args.condition and v["consultant_side"] == args.side:

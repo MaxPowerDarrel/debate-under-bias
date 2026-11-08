@@ -21,3 +21,12 @@ The wording is adapted from Khan et al.'s judge prompts (`core/config/experiment
 - There are no `<thinking>` tags. Every judge, including naive and expert, gives a short explanation of up to 200 words before its answer, so the error review has stated reasons to read. Khan's naive and expert judges give only the answer.
 - The consultancy prompt names the letter of the answer the consultant argues for.
 - The shared system prompt says to always choose an answer. Khan says this only in the naive prompt.
+
+## `debater_v2` and `consultant_v2`
+
+These are copies of the v1 prompts with three changes, made after the Day 6 pilot:
+- **Word target:** the prompt asks for `$target_words` (100 for debate, 200 for consultancy) and no longer states the hard limit (150 and 300), which the code still enforces. This matches Khan et al. In the Day 6 pilot, 166 of 240 turns went over the hard limit.
+- **Quote tags:** the prompt now says that the judge treats any quote outside `<quote></quote>` tags as unverified, including one in ordinary quotation marks. The judge prompt already said this, but the arguers weren't told. In the Day 6 pilot, 48 of 240 turns had no quote tags, mostly in round 1.
+- **Elided quotes:** the prompt now says that a quote must be one continuous passage, and a quote that skips words with "..." is unverified. This is the real verification rule in `quotes.py`.
+
+The consultant prompt keeps Khan's line "winning the game is the main objective, not absolute honesty", and the debater prompt still doesn't have it, as in Khan.

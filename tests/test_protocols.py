@@ -18,6 +18,9 @@ from debate_bias.protocols import (
 STORY = "The captain kept the map in a locked drawer. Nobody else had the key to the drawer."
 QUESTION = Question("q1", "a1", "Title", STORY, "Where was the map?", "In a locked drawer", "On the deck")
 SETTINGS = ArguerSettings("claude-sonnet-5-5", "high", 16000, rounds=3, debate_words=150, consultancy_words=300)
+SETTINGS_V2 = ArguerSettings("claude-sonnet-5-5", "high", 16000, rounds=3, debate_words=150, consultancy_words=300,
+                             debate_target_words=100, consultancy_target_words=200,
+                             debater_prompts="debater_v2", consultant_prompts="consultant_v2")
 
 
 class FakeLLM:
@@ -29,9 +32,10 @@ class FakeLLM:
         self.stop_reason = stop_reason
 
     def call(self, model, system, messages, *, max_tokens, effort, sample=0, tag=""):
-        self.calls.append({"system": system, "user": messages[0]["content"], "tag": tag})
-        text = "" if self.stop_reason == "refusal" else self.reply(len(self.calls), tag)
-        return Response(text, self.stop_reason, None, {}, model, None, 0.0, False, f"key{len(self.calls)}")
+        self.calls.append({"system": system, "user": messages[0]["content"], "tag": tag, "sample": sample})
+        stop = self.stop_reason(len(self.calls), tag) if callable(self.stop_reason) else self.stop_reason
+        text = "" if stop == "refusal" else self.reply(len(self.calls), tag)
+        return Response(text, stop, None, {}, model, None, 0.0, False, f"key{len(self.calls)}")
 
 
 # Word limit
@@ -164,17 +168,78 @@ def test_long_argument_is_truncated_on_its_turn():
     assert count_words(turn.argument) == 150 + 1  # plus the marker
 
 
-def test_refusal_ends_the_transcript():
-    transcript = run_debate(FakeLLM(stop_reason="refusal"), SETTINGS, QUESTION)
-    assert transcript.status == "refused"
+def test_refusal_is_retried_once_with_its_own_sample():
+    llm = FakeLLM(stop_reason=lambda n, tag: "refusal" if n == 1 else "end_turn")
+    transcript = run_consultancies(llm, SETTINGS, QUESTION)[0]
+    assert transcript.status == "complete" and transcript.forfeits == {}
+    assert [c["sample"] for c in llm.calls[:2]] == [0, 1]
+    assert llm.calls[0]["system"] == llm.calls[1]["system"] and llm.calls[0]["user"] == llm.calls[1]["user"]
+    first = transcript.turns[0]
+    assert first.status == "ok" and first.cache_key == "key2"
+    assert first.attempts == [{"status": "refused", "raw": "", "stop_reason": "refusal", "cache_key": "key1"}]
+    assert transcript.turns[1].attempts == []
+
+
+def test_refusal_after_retry_is_a_forfeit_that_ends_the_transcript():
+    llm = FakeLLM(stop_reason=lambda n, tag: "refusal" if ":distractor:" in tag else "end_turn")
+    transcript = run_debate(llm, SETTINGS, QUESTION)
+    assert transcript.status == "forfeit" and transcript.forfeits == {"distractor": "refused"}
     assert len(transcript.turns) == 2  # both round-1 turns, then stop
+    failed = transcript.turns[1]
+    assert failed.status == "refused" and failed.cache_key == "key3" and failed.argument == ""
+    assert [a["cache_key"] for a in failed.attempts] == ["key2"]
+    assert len(llm.calls) == 3  # correct side once, distractor twice
 
 
-def test_missing_argument_tag_is_a_format_error():
+def test_missing_argument_tag_after_retry_is_a_forfeit():
     reply = lambda n, tag: "I argue it was in the drawer." if tag.endswith("r2") else "<argument>Fine.</argument>"
     transcript = run_consultancies(FakeLLM(reply), SETTINGS, QUESTION)[0]
-    assert transcript.status == "format_error"
+    assert transcript.forfeits == {"correct": "format_error"}
     assert [t.status for t in transcript.turns] == ["ok", "format_error"]
+    assert transcript.turns[1].attempts[0]["status"] == "format_error"
+
+
+def test_forfeit_round_trips_through_json():
+    llm = FakeLLM(stop_reason=lambda n, tag: "refusal" if ":distractor:" in tag else "end_turn")
+    record = json.loads(json.dumps(run_debate(llm, SETTINGS, QUESTION).to_dict()))
+    assert record["status"] == "forfeit" and record["forfeits"] == {"distractor": "refused"}
+    assert Transcript.from_dict(record).forfeits == {"distractor": "refused"}
+
+
+# Prompt versions
+
+
+def test_v2_prompts_ask_for_the_target_and_keep_the_hard_limit():
+    llm = FakeLLM(lambda n, tag: "<argument>" + "word " * 140 + "</argument>")
+    debate = run_debate(llm, SETTINGS_V2, QUESTION)
+    consultancy = run_consultancies(llm, SETTINGS_V2, QUESTION)[0]
+    assert debate.prompts == "debater_v2" and consultancy.prompts == "consultant_v2"
+    assert "100 words" in llm.calls[0]["system"] and "100 words" in llm.calls[0]["user"]
+    assert "150" not in llm.calls[0]["system"] + llm.calls[0]["user"]
+    assert "200 words" in llm.calls[6]["system"]
+    assert not debate.turns[0].truncated  # 140 words is over the target but under the hard limit
+    assert apply_word_limit("word " * 160, 150)[2]
+
+
+def test_v2_prompts_explain_quote_tags():
+    llm = FakeLLM()
+    run_debate(llm, SETTINGS_V2, QUESTION)
+    run_consultancies(llm, SETTINGS_V2, QUESTION)
+    for call in llm.calls:
+        assert "ordinary quotation marks" in call["system"]
+        assert '"..."' in call["system"]
+        assert "plain quotation marks count as unverified" in call["user"]
+        assert "$" not in call["system"] + call["user"]
+
+
+def test_v2_round_requests_follow_the_prompt_files():
+    llm = FakeLLM()
+    run_debate(llm, SETTINGS_V2, QUESTION)
+    run_consultancies(llm, SETTINGS_V2, QUESTION)
+    assert "opening argument" in llm.calls[0]["user"]
+    assert "flaws in your opponent's argument" in llm.calls[2]["user"]
+    assert "critiques your opponent has made" in llm.calls[4]["user"]
+    assert "opening argument" in llm.calls[6]["user"] and "opening argument" not in llm.calls[7]["user"]
 
 
 def test_transcript_serializes_to_json():
@@ -197,3 +262,5 @@ def test_settings_load_from_config(name):
     config = yaml.safe_load((Path(__file__).parent.parent / f"configs/{name}.yaml").read_text())
     settings = ArguerSettings.from_config(config)
     assert settings.debate_words == 150 and settings.consultancy_words == 300 and settings.rounds == 3
+    assert settings.debate_target_words == 100 and settings.consultancy_target_words == 200
+    assert settings.debater_prompts == "debater_v2" and settings.consultant_prompts == "consultant_v2"

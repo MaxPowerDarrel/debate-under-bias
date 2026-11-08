@@ -220,3 +220,44 @@ With 20 questions, each of these has a margin of roughly ±15–20 points, so th
 - **Reading the naive reasons:** the judge only partly complies. Votes that mention wording cues fell from 86/120 to 60/120. Some votes swap one cue for its opposite. On "Phone Me in Central Park" it now picks the generic invasion motive because it is "the more typical premise", and says "I'm not picking B because it sounds more natural as wording". Others still argue from specificity, as in Q1: "Option B is more generic".
 - **What this means:** 60% from 20 questions (margin about ±20) is consistent with chance but doesn't show it. The warning didn't change debate or consultancy, so the debate-over-naive gap grows from about 8 to 25 points because naive dropped, not because the protocols improved. The `judge_v1` naive result still matters: answers in this dataset can often be guessed from their wording, and that belongs in the report either way.
 - **Decision:** Darrel chose `judge_v2`. Both configs now set `prompts.judge: judge_v2`. Check on Day 10 whether naive settles near 50% over 50 questions.
+
+## Day 7 (Mon, Nov 9, started Nov 8): fix the arguer prompts, refusals, and word limits
+
+Earlier notes call this "Day 9". It is the schedule row for Mon, Nov 9. We are working a day ahead to leave padding.
+
+### Decisions (Darrel, Nov 8)
+- **Refusals and format errors:** retry once. If the retry also fails, score the transcript as a loss for the side that failed, and mark it in the records.
+- **Forfeits in the analysis:** report accuracy both with forfeits scored as losses (the main number) and with forfeited questions left out (the check).
+- **Word limit:** do what Khan does. Ask for fewer words than the hard limit (100 for debate, 200 for consultancy), and keep the hard cut at 150 and 300. No minimum length, and no resampling for length.
+- **Consultant honesty line:** keep it, matching Khan. The debater prompt still leaves it out.
+- **Missing quote tags:** use Claude's recommended wording, including the line about "..." quotes.
+- **Checking v2:** no separate run. Check truncation and quote tags in the Day 10 pilot.
+
+### Plan
+- [x] **New prompt versions** `prompts/debater_v2/` and `prompts/consultant_v2/` (versions are never edited after use). Changes from v1: the word target, the quote-tag wording, and the "..." rule. Recorded in `prompts/README.md`.
+- [x] **Word target:** the prompt states only `$target_words` (100 or 200). The hard limit (150 or 300) stays in the code and is not mentioned, as in Khan. Added `debate_target_words` and `consultancy_target_words` to both configs.
+- [x] **Arguer prompt versions in the config:** `prompts.debater` and `prompts.consultant`, both set to v2 in both configs. Without them the code falls back to v1, so old runs still replay.
+- [x] **Retry:** on a refusal or a missing `<argument>` tag, call again with `sample=1`, so the retry has its own cache key and log line. A failed first attempt is kept in `Turn.attempts`.
+- [x] **Forfeit scoring:** if the retry also fails, the transcript's status is `forfeit`, and `forfeits` names the side and reason. It isn't judged. Each order scores 0 if the correct side failed, 1 if the distractor side failed, and 0.5 if both debaters failed in the same round. Verdicts get `status: "forfeit"` and the same `forfeits` field.
+- [x] **Summary:** `run.py` prints accuracy with forfeits, accuracy without them, and the forfeit count for each condition.
+- [x] **Tests (fake LLM):** retry succeeds on the second attempt with the same prompt and `sample=1`, a double refusal and a double format error each end the transcript as a forfeit, forfeits survive JSON, forfeit scoring for each side and for both, the summary line, v2 prompts ask for the target while truncation uses the hard limit, v2 quote wording reaches every call, and the configs load v2.
+- [x] `scripts/show_transcript.py` shows when a turn was retried.
+- [x] Add an entry to `AI_USE_LOG.md`.
+
+### Review
+- `uv run pytest`: 122 passed (114 before). The old Day 6 records still load with the new classes.
+- No API calls today. The Day 10 pilot uses v2, so its Sonnet calls all miss the cache. The estimate is unchanged: 50 questions at about $0.36 each is about $18, and total pilot spend would reach about $26 of $50.
+- `scripts/run_one_question.py` and a rerun of `day6_unbiased_20` now read the configs, so they would use v2 and make paid calls. Their saved v1 output is unchanged.
+
+### For Day 10 (50-question pilot)
+- Count turns over the hard limit and turns without quote tags, and compare with Day 6 (166/240 and 48/240).
+- Count retries and forfeits, by side.
+- Check whether naive accuracy settles near 50% with `judge_v2`.
+
+### For Day 13 (`analyze.py`)
+- Report each accuracy and penalty both with forfeits scored as losses and with forfeited questions left out.
+
+### Notes for Darrel's report
+- Consultants are told "winning the game is the main objective, not absolute honesty", and debaters aren't. This follows Khan, but it is a difference between the protocols.
+- Arguers are told to quote only continuous passages, because the checker rejects quotes with "...". In the Day 5 check, before this rule was in the prompt, a debater pointed out an opponent's elided, unverified quote.
+- How refusals are handled: one retry, then the transcript is scored as a loss for that side, with a check that leaves forfeits out.

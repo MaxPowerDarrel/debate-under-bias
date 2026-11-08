@@ -13,8 +13,12 @@ max_tokens:  # Includes thinking, which is billed by use, so a generous ceiling 
   judge: 8000
 prompts:  # Prompt versions: folders in prompts/
   judge: judge_v2
+  debater: debater_v2
+  consultant: consultant_v2
 protocol:
   rounds: 3
-  debate_words_per_turn: 150
+  debate_words_per_turn: 150  # Hard limits, enforced by truncation and not stated in the prompt
   consultancy_words_per_turn: 300
+  debate_target_words: 100  # What the prompt asks for, as in Khan et al.
+  consultancy_target_words: 200
   judge_votes: 3

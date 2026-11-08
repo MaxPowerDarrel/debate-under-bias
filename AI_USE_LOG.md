@@ -65,3 +65,7 @@ Entry format:
 ## 2026-11-07: Test a judge prompt that warns against guessing from answer wording
 - **Claude:** Suggested the test and its cost. Made the judge prompt version a config setting with a `run.py` override, wrote `prompts/judge_v2/` (one added line in all four judge prompts), and added a test. Re-judged the 20 pilot questions from cached transcripts ($0.42), compared the results with `judge_v1`, and read the new naive reasoning.
 - **Darrel:** Asked whether a prompt change was worth testing, approved the run with a $1 cap, chose to switch both configs to `judge_v2`, and approved the commit.
+
+## 2026-11-08: Fix the arguer prompts, refusals, and word limits (Day 7, a day early)
+- **Claude:** Listed the open Day 9 questions from `tasks/todo.md` and recommended options, including the quote-tag wording. Wrote the plan, `prompts/debater_v2/` and `prompts/consultant_v2/` (word target, quote-tag rule, "..." rule), the retry and forfeit logic in `protocols.py`, forfeit scoring in `judge.py`, the forfeit lines in the `run.py` summary, config settings for arguer prompt versions and word targets, retry display in `scripts/show_transcript.py`, and tests. No API calls.
+- **Darrel:** Chose one retry and then scoring as a loss for the failing side, with annotation. Chose Khan's word targets, kept the consultant honesty line to match Khan, and asked for it to be noted in the report. Approved the recommended quote wording including the "..." line, chose to report accuracy without forfeits as a check, and chose to fold the v2 check into the Day 10 pilot.

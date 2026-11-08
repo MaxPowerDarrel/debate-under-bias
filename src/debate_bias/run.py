@@ -95,17 +95,21 @@ def main(argv: list[str] | None = None) -> None:
 
 
 def summarize(verdicts_path: Path) -> None:
-    """Print plain accuracy per condition. Intervals and figures belong in `analyze.py`."""
+    """Print plain accuracy per condition. Intervals and figures belong in `analyze.py`.
+
+    Accuracy counts forfeits as losses for the side that failed. "Without forfeits" is the
+    check that leaves them out.
+    """
     records = [json.loads(line) for line in verdicts_path.read_text().splitlines()]
+    mean = lambda rows: sum(r["score"] for r in rows) / len(rows) if rows else float("nan")
     for condition in ("naive", "expert", "consultancy", "debate"):
         rows = [r for r in records if r["condition"] == condition]
         judged = [r for r in rows if r["status"] == "judged"]
         invalid = sum(v["letter"] is None for r in judged for v in r["votes"])
         votes = sum(len(r["votes"]) for r in judged)
-        accuracy = sum(r["score"] for r in judged) / len(judged) if judged else float("nan")
-        print(f"{condition:12} accuracy {accuracy:.3f}  over {len(judged)} judged orders, "
-              f"{len(rows) - len(judged)} excluded, {sum(r['tie'] for r in judged)} ties, "
-              f"{invalid}/{votes} invalid votes")
+        print(f"{condition:12} accuracy {mean(rows):.3f} ({mean(judged):.3f} without forfeits)  "
+              f"over {len(rows)} orders, {len(rows) - len(judged)} forfeits, "
+              f"{sum(r['tie'] for r in judged)} ties, {invalid}/{votes} invalid votes")
 
 
 if __name__ == "__main__":

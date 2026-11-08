@@ -3,9 +3,10 @@
 Both protocols have the arguer model argue for an assigned answer over several rounds.
 Each turn goes through the same steps:
 
-1. Build the prompt from the versioned files in `prompts/<role>_v1/`. The story comes
+1. Build the prompt from the versioned files in `prompts/<version>/`. The versions come
+   from the config's `prompts.debater` and `prompts.consultant` settings. The story comes
    first in the system prompt, and the transcript so far is in the user message.
-2. Make one call through `LLM.call`, so the turn is cached, logged, and counted against
+2. Make the call through `LLM.call`, so the turn is cached, logged, and counted against
    the budget.
 3. Keep only the text inside `<argument>` tags. Reset any `v_quote`/`u_quote` tags the
    arguer wrote, apply the word limit, then verify quotes against the story.
@@ -20,13 +21,19 @@ Transcripts store turns by side (`correct` or `distractor`), not by debater lett
 arguer reads the transcript as "your argument" and "your opponent's argument". The
 judge's Debater A/B labels and the order swap are added in `judge.py`.
 
-**Word limit:** words are whitespace-separated tokens, with quote tags not counted. An
-argument over the limit is cut at the limit. If the cut falls inside a quote, the whole
-quote is dropped, so the judge never sees a shortened quote. There is no minimum length
-and no resampling, so each turn is exactly one cached call.
+**Word limit:** there are two numbers, as in Khan et al. The prompt asks for the target
+(`*_target_words`, such as 100), and the code enforces the hard limit
+(`*_words_per_turn`, such as 150), which the prompt doesn't state. Words are
+whitespace-separated tokens, with quote tags not counted. An argument over the hard limit
+is cut at the limit. If the cut falls inside a quote, the whole quote is dropped, so the
+judge never sees a shortened quote. There is no minimum length and no resampling for
+length.
 
 **Refusals and format errors:** a refusal, or a reply with no `<argument>…</argument>`,
-is recorded on the turn and ends the transcript. Nothing is retried.
+is retried once with `sample=1`, which gives the retry its own cache key and log line.
+The failed first attempt is kept in `Turn.attempts`. If the retry also fails, the turn
+keeps its `refused` or `format_error` status and the transcript ends as a forfeit by that
+side. `judge.py` scores a forfeit as a loss for the side that failed, without judging it.
 """
 
 import re
@@ -39,13 +46,13 @@ from .llm import LLM
 from .quotes import reset_tags, verify
 
 PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
-DEBATER_PROMPTS = "debater_v1"
-CONSULTANT_PROMPTS = "consultant_v1"
+DEFAULT_DEBATER_PROMPTS = "debater_v1"
+DEFAULT_CONSULTANT_PROMPTS = "consultant_v1"
+REQUEST_FILES = ("opening", "second", "later")  # Consultants have no `second`, so use `later`
+RETRIES = 1
 SIDES = ("correct", "distractor")
 TRUNCATED_MARK = "[truncated]"
 
-# Round 1 uses the first request file, round 2 the second, and so on; the last repeats.
-_REQUESTS = {DEBATER_PROMPTS: ("opening", "second", "later"), CONSULTANT_PROMPTS: ("opening", "later")}
 _ARGUMENT = re.compile(r"<argument>(.*?)</argument>", re.DOTALL)
 _TOKEN = re.compile(r"\S+")
 _QUOTE_TAG = re.compile(r"</?quote>")
@@ -57,12 +64,17 @@ class ArguerSettings:
     effort: str
     max_tokens: int
     rounds: int
-    debate_words: int
+    debate_words: int  # Hard limits, enforced by truncation
     consultancy_words: int
+    debate_target_words: int | None = None  # What the prompt asks for; None means the hard limit
+    consultancy_target_words: int | None = None
+    debater_prompts: str = DEFAULT_DEBATER_PROMPTS
+    consultant_prompts: str = DEFAULT_CONSULTANT_PROMPTS
 
     @classmethod
     def from_config(cls, config: dict) -> "ArguerSettings":
         protocol = config["protocol"]
+        prompts = config.get("prompts", {})
         return cls(
             model=config["models"]["arguer"],
             effort=config["effort"]["arguer"],
@@ -70,6 +82,10 @@ class ArguerSettings:
             rounds=protocol["rounds"],
             debate_words=protocol["debate_words_per_turn"],
             consultancy_words=protocol["consultancy_words_per_turn"],
+            debate_target_words=protocol.get("debate_target_words"),
+            consultancy_target_words=protocol.get("consultancy_target_words"),
+            debater_prompts=prompts.get("debater", DEFAULT_DEBATER_PROMPTS),
+            consultant_prompts=prompts.get("consultant", DEFAULT_CONSULTANT_PROMPTS),
         )
 
 
@@ -77,7 +93,7 @@ class ArguerSettings:
 class Turn:
     round: int
     side: str
-    status: str  # "ok", "refused", or "format_error"
+    status: str  # "ok", or "refused" or "format_error" if the retry also failed
     argument: str  # What the judge sees: word-limited, quotes tagged v_quote or u_quote
     word_count: int  # Before truncation
     truncated: bool
@@ -86,6 +102,7 @@ class Turn:
     raw: str  # The model's full text reply
     stop_reason: str
     cache_key: str
+    attempts: list[dict] = field(default_factory=list)  # Failed earlier attempts, if retried
 
 
 @dataclass
@@ -99,15 +116,20 @@ class Transcript:
     turns: list[Turn] = field(default_factory=list)
 
     @property
+    def forfeits(self) -> dict[str, str]:
+        """Each side whose turn still failed after the retry, with the reason."""
+        return {t.side: t.status for t in self.turns if t.status != "ok"}
+
+    @property
     def status(self) -> str:
-        return next((t.status for t in self.turns if t.status != "ok"), "complete")
+        return "forfeit" if self.forfeits else "complete"
 
     def to_dict(self) -> dict:
-        return {**asdict(self), "status": self.status}
+        return {**asdict(self), "status": self.status, "forfeits": self.forfeits}
 
     @classmethod
     def from_dict(cls, record: dict) -> "Transcript":
-        fields = {k: v for k, v in record.items() if k not in ("status", "turns")}
+        fields = {k: v for k, v in record.items() if k not in ("status", "forfeits", "turns")}
         return cls(**fields, turns=[Turn(**t) for t in record["turns"]])
 
 
@@ -165,42 +187,47 @@ def take_turn(
     side: str,
     rounds: list[dict[str, Turn]],
     word_limit: int,
+    target_words: int | None,
     tag: str,
 ) -> Turn:
     prompts = load_prompts(version)
-    requests = _REQUESTS[version]
+    requests = [name for name in REQUEST_FILES if name in prompts]
     round_number = len(rounds) + 1
     values = {
         "story": question.story,
         "question": question.question,
         "your_answer": answers[side],
         "other_answer": answers[_other(side)],
-        "word_limit": word_limit,
+        "word_limit": word_limit,  # Used by v1 prompts, which state the hard limit
+        "target_words": target_words or word_limit,
     }
     request = prompts[requests[min(round_number, len(requests)) - 1]].substitute(values)
     user = prompts["user"].substitute(values, transcript=render_history(rounds, side), request=request)
-    response = llm.call(
-        settings.model,
-        prompts["system"].substitute(values),
-        [{"role": "user", "content": user}],
-        max_tokens=settings.max_tokens,
-        effort=settings.effort,
-        tag=f"{tag}:{side}:r{round_number}",
-    )
-
-    def failed(status: str) -> Turn:
-        return Turn(round_number, side, status, "", 0, False, [], [], response.text,
-                    response.stop_reason, response.cache_key)
-
-    if response.stop_reason == "refusal":
-        return failed("refused")
-    match = _ARGUMENT.search(response.text)
-    if not match:
-        return failed("format_error")
+    failures = []
+    for attempt in range(RETRIES + 1):
+        response = llm.call(
+            settings.model,
+            prompts["system"].substitute(values),
+            [{"role": "user", "content": user}],
+            max_tokens=settings.max_tokens,
+            effort=settings.effort,
+            sample=attempt,
+            tag=f"{tag}:{side}:r{round_number}",
+        )
+        match = None if response.stop_reason == "refusal" else _ARGUMENT.search(response.text)
+        if match:
+            break
+        failures.append({"status": "refused" if response.stop_reason == "refusal" else "format_error",
+                         "raw": response.text, "stop_reason": response.stop_reason,
+                         "cache_key": response.cache_key})
+    else:  # Every attempt failed: the last one becomes the turn, and earlier ones are kept
+        last = failures.pop()
+        return Turn(round_number, side, last["status"], "", 0, False, [], [], last["raw"],
+                    last["stop_reason"], last["cache_key"], failures)
     limited, word_count, truncated = apply_word_limit(reset_tags(match.group(1).strip()), word_limit)
     checked = verify(limited, question.story)
     return Turn(round_number, side, "ok", checked.text, word_count, truncated, checked.verified,
-                checked.unverified, response.text, response.stop_reason, response.cache_key)
+                checked.unverified, response.text, response.stop_reason, response.cache_key, failures)
 
 
 def _answers(question: Question) -> dict[str, str]:
@@ -209,13 +236,14 @@ def _answers(question: Question) -> dict[str, str]:
 
 def run_debate(llm: LLM, settings: ArguerSettings, question: Question) -> Transcript:
     transcript = Transcript("debate", question.question_id, question.article_id,
-                            _answers(question), None, DEBATER_PROMPTS)
+                            _answers(question), None, settings.debater_prompts)
     rounds: list[dict[str, Turn]] = []
     for _ in range(settings.rounds):
         # Both turns are built from the same earlier rounds, so they are simultaneous.
         new = {
-            side: take_turn(llm, settings, DEBATER_PROMPTS, question, transcript.answers, side,
-                            rounds, settings.debate_words, f"debate:{question.question_id}")
+            side: take_turn(llm, settings, settings.debater_prompts, question, transcript.answers,
+                            side, rounds, settings.debate_words, settings.debate_target_words,
+                            f"debate:{question.question_id}")
             for side in SIDES
         }
         rounds.append(new)
@@ -227,11 +255,12 @@ def run_debate(llm: LLM, settings: ArguerSettings, question: Question) -> Transc
 
 def run_consultancy(llm: LLM, settings: ArguerSettings, question: Question, side: str) -> Transcript:
     transcript = Transcript("consultancy", question.question_id, question.article_id,
-                            _answers(question), side, CONSULTANT_PROMPTS)
+                            _answers(question), side, settings.consultant_prompts)
     rounds: list[dict[str, Turn]] = []
     for _ in range(settings.rounds):
-        turn = take_turn(llm, settings, CONSULTANT_PROMPTS, question, transcript.answers, side,
-                         rounds, settings.consultancy_words, f"consultancy:{question.question_id}")
+        turn = take_turn(llm, settings, settings.consultant_prompts, question, transcript.answers,
+                         side, rounds, settings.consultancy_words, settings.consultancy_target_words,
+                         f"consultancy:{question.question_id}")
         rounds.append({side: turn})
         transcript.turns.append(turn)
         if turn.status != "ok":

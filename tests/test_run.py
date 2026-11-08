@@ -7,7 +7,7 @@ from debate_bias.data import Question, sample_questions
 from debate_bias.judge import JudgeSettings
 from debate_bias.llm import Response
 from debate_bias.protocols import ArguerSettings
-from debate_bias.run import run_question, stage_budget
+from debate_bias.run import run_question, stage_budget, summarize
 
 STORY = "The captain kept the map in a locked drawer. Nobody else had the key to the drawer."
 QUESTION = Question("q1", "a1", "Title", STORY, "Where was the map?", "In a locked drawer", "On the deck")
@@ -16,11 +16,14 @@ JUDGE = JudgeSettings("claude-haiku-5-5", "medium", 8000, votes=3)
 
 
 class FakeLLM:
-    def __init__(self):
+    def __init__(self, refuse=""):
         self.tags = []
+        self.refuse = refuse  # Arguer calls whose tag contains this always refuse
 
     def call(self, model, system, messages, *, max_tokens, effort, sample=0, tag=""):
         self.tags.append(tag)
+        if self.refuse and self.refuse in tag and not tag.startswith("judge"):
+            return Response("", "refusal", None, {}, model, None, 0.0, False, "k")
         text = "Answer: A" if tag.startswith("judge") else "<argument>My case. <quote>the map</quote></argument>"
         return Response(text, "end_turn", None, {}, model, None, 0.0, False, "k")
 
@@ -67,3 +70,15 @@ def test_stage_budget_counts_every_run_and_applies_the_run_cap(tmp_path):
     assert budget.cap_usd == 15.0  # This run may add 10 on top of the 5 spent elsewhere
     assert stage_budget(tmp_path, this_log, stage_cap=12, run_cap=10).cap_usd == 12
     assert stage_budget(tmp_path, this_log, stage_cap=50, run_cap=None).cap_usd == 50
+
+
+def test_summary_counts_forfeits_and_reports_accuracy_without_them(tmp_path, capsys):
+    llm = FakeLLM(refuse="consultancy:q1:distractor")
+    _, verdicts = run_question(llm, ARGUER, JUDGE, QUESTION)
+    path = tmp_path / "verdicts.jsonl"
+    path.write_text("".join(json.dumps(v.to_dict()) + "\n" for v in verdicts))
+    summarize(path)
+    line = next(l for l in capsys.readouterr().out.splitlines() if l.startswith("consultancy"))
+    # Correct-side consultancy scores 1 then 0 (judge always says A); the distractor forfeit scores 1 twice.
+    assert "accuracy 0.750 (0.500 without forfeits)" in line
+    assert "over 4 orders, 2 forfeits" in line

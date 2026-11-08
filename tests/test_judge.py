@@ -188,11 +188,25 @@ def test_refusals_and_missing_answers_are_invalid_votes():
     assert rambling.score == 0.5 and all(v.side is None for v in rambling.votes)
 
 
-def test_incomplete_transcript_is_excluded_without_calls():
+def test_forfeit_is_scored_without_calls_as_a_loss_for_the_side_that_failed():
     llm = FakeLLM()
-    verdict = judge(llm, SETTINGS, "debate", QUESTION, 0, debate(status="refused"))
-    assert verdict.status == "excluded" and verdict.score is None and not verdict.tie
+    distractor_failed = judge(llm, SETTINGS, "debate", QUESTION, 0, debate(status="refused"))
+    assert distractor_failed.status == "forfeit" and distractor_failed.forfeits == {"distractor": "refused"}
+    assert distractor_failed.score == 1.0 and not distractor_failed.tie
+    correct_failed = consultancy("correct")
+    correct_failed.turns[-1].status = "format_error"
+    for order in ORDERS:
+        verdict = judge(llm, SETTINGS, "consultancy", QUESTION, order, correct_failed)
+        assert verdict.score == 0.0 and verdict.votes == []
     assert llm.calls == []
+
+
+def test_both_debaters_forfeiting_scores_a_coin_flip():
+    both = debate(status="refused")
+    both.turns[-2].status = "refused"
+    verdict = judge(FakeLLM(), SETTINGS, "debate", QUESTION, 1, both)
+    assert verdict.score == 0.5 and verdict.forfeits == {"correct": "refused", "distractor": "refused"}
+    assert json.loads(json.dumps(verdict.to_dict()))["score"] == 0.5
 
 
 def test_verdict_serializes_to_json():
