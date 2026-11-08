@@ -12,3 +12,12 @@ Placeholders use `$name` (`string.Template`), because stories can contain `{}`. 
 - Debaters refer to each other as "my opponent", so the judge's Debater A/B labels can be swapped freely.
 - Consultants have no judge questions, so later rounds ask the consultant to develop its case further.
 - The prompt states the hard word limit. Khan's prompt asks for fewer words than the hard limit.
+
+## `judge_v1`
+
+`system.md` is shared by every judge. Each condition has one user-message file: `naive.md`, `expert.md`, `consultancy.md`, and `debate.md`. Only `expert.md` has a `$story` placeholder, and a test checks that no other judge prompt contains story text.
+
+The wording is adapted from Khan et al.'s judge prompts (`core/config/experiment/judge/debate/default.yaml`, `consultancy/default.yaml`, `baselines/blind.yaml`, `baselines/oracle.yaml`, MIT license). The changes from their wording:
+- There are no `<thinking>` tags. Every judge, including naive and expert, gives a short explanation of up to 200 words before its answer, so the error review has stated reasons to read. Khan's naive and expert judges give only the answer.
+- The consultancy prompt names the letter of the answer the consultant argues for.
+- The shared system prompt says to always choose an answer. Khan says this only in the naive prompt.

@@ -6,6 +6,7 @@ from debate_bias.data import Question
 from debate_bias.llm import Response
 from debate_bias.protocols import (
     SIDES,
+    Transcript,
     TRUNCATED_MARK,
     ArguerSettings,
     apply_word_limit,
@@ -180,6 +181,12 @@ def test_transcript_serializes_to_json():
     record = run_debate(FakeLLM(), SETTINGS, QUESTION).to_dict()
     assert json.loads(json.dumps(record))["status"] == "complete"
     assert record["turns"][0]["side"] == "correct"
+
+
+def test_transcript_round_trips_through_json():
+    transcript = run_consultancies(FakeLLM(), SETTINGS, QUESTION)[1]
+    record = json.loads(json.dumps(transcript.to_dict()))
+    assert Transcript.from_dict(record) == transcript
 
 
 @pytest.mark.parametrize("name", ["pilot", "final"])

@@ -105,6 +105,11 @@ class Transcript:
     def to_dict(self) -> dict:
         return {**asdict(self), "status": self.status}
 
+    @classmethod
+    def from_dict(cls, record: dict) -> "Transcript":
+        fields = {k: v for k, v in record.items() if k not in ("status", "turns")}
+        return cls(**fields, turns=[Turn(**t) for t in record["turns"]])
+
 
 def count_words(text: str) -> int:
     return sum(1 for token in _TOKEN.findall(text) if _QUOTE_TAG.sub("", token))

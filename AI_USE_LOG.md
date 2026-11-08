@@ -53,3 +53,11 @@ Entry format:
 ## 2026-11-06: Verify Day 5
 - **Claude:** Recorded Darrel's verification and committed the Day 5 work.
 - **Darrel:** Ran the test suite, read the transcripts from the one-question check, and approved the commit.
+
+## 2026-11-07: Write `judge.py`, the baselines, and the runner, and run the 20-question pilot (Day 6)
+- **Claude:** Read Khan et al.'s judge prompts and order-swap code (`llm_debate`, MIT) and wrote the Day 6 plan. Wrote `prompts/judge_v1/` (adapted from Khan's wording), `judge.py` (answer-order swaps, three votes, last-answer parsing, 0.5 for ties, and a check that only the expert judge gets the story), a minimal `run.py` with a spending cap shared across pilot runs, `sample_questions` in `data.py`, `scripts/show_transcript.py`, and tests including the leak test. Ran the approved 20-question train pilot ($7.55). Read 8 transcripts plus the expert and naive judge outputs, and wrote findings in `tasks/todo.md`. The main one is that the naive judge scores 77.5% by guessing from answer wording.
+- **Darrel:** Approved the Day 6 plan and the paid pilot, and chose to score tied or invalid votes as 0.5. Reading transcripts for Gate 1: not recorded.
+
+## 2026-11-07: Verify Day 6
+- **Claude:** Recorded Darrel's verification and committed the Day 6 work.
+- **Darrel:** Read the pilot transcripts for Gate 1, ran the test suite, and approved the commit.

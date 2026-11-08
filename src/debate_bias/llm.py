@@ -82,6 +82,14 @@ def prompt_hash(system: str, messages: list[dict]) -> str:
     return _sha256({"system": system, "messages": messages})
 
 
+def logged_spend(log_path: Path) -> float:
+    """Total paid spend recorded in one call log. A missing log has spent nothing."""
+    if not log_path.exists():
+        return 0.0
+    with log_path.open() as f:
+        return sum(json.loads(line)["cost_usd"] for line in f if line.strip())
+
+
 class BudgetExceeded(RuntimeError):
     pass
 
@@ -96,11 +104,7 @@ class Budget:
     @classmethod
     def from_log(cls, cap_usd: float, log_path: Path) -> "Budget":
         """Resume a run's spend from its log, so a restart can't reset the cap."""
-        spent = 0.0
-        if log_path.exists():
-            with log_path.open() as f:
-                spent = sum(json.loads(line)["cost_usd"] for line in f if line.strip())
-        return cls(cap_usd, spent)
+        return cls(cap_usd, logged_spend(log_path))
 
     def check(self) -> None:
         if self.spent_usd >= self.cap_usd:

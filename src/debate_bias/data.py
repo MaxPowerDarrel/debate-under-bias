@@ -9,6 +9,7 @@ in the data file. The QuALITY docs call it `untimed_eval3_distractor`.
 """
 
 import json
+import random
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
@@ -112,6 +113,23 @@ def filter_questions(articles: list[dict]) -> tuple[list[Question], dict[str, in
 def load_questions(split: str, data_dir: Path = DATA_DIR) -> tuple[list[Question], dict[str, int]]:
     """Load one split and return its filtered questions and per-stage counts."""
     return filter_questions(read_split(split, data_dir))
+
+
+def sample_questions(questions: list[Question], n: int | None, seed: int) -> list[Question]:
+    """Pick `n` questions from `n` different stories, one question per story, with a fixed seed.
+
+    `None` returns every question, which is what the final run uses. Pilots spread their
+    questions across stories because neighbouring questions often share a story.
+    """
+    if n is None:
+        return list(questions)
+    by_story: dict[str, list[Question]] = {}
+    for q in questions:
+        by_story.setdefault(q.article_id, []).append(q)
+    if n > len(by_story):
+        raise ValueError(f"Asked for {n} questions but there are only {len(by_story)} stories")
+    rng = random.Random(seed)
+    return [rng.choice(by_story[story]) for story in rng.sample(sorted(by_story), n)]
 
 
 if __name__ == "__main__":
