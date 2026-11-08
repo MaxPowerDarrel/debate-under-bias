@@ -11,6 +11,8 @@ effort:  # Pinned to each model's default so it is recorded, not implied
 max_tokens:  # Includes thinking, which is billed by use, so a generous ceiling costs nothing extra
   arguer: 16000
   judge: 8000
+prompts:  # Prompt versions: folders in prompts/
+  judge: judge_v2
 protocol:
   rounds: 3
   debate_words_per_turn: 150

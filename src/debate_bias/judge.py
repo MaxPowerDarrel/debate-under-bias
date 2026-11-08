@@ -1,6 +1,7 @@
 """Judge prompts, answer-order swaps, and majority voting.
 
-There are four judge conditions, all using the prompts in `prompts/judge_v1/`:
+There are four judge conditions. Their prompts are in `prompts/<version>/`, and the version
+comes from the config's `prompts.judge` setting (`judge_v1` by default):
 
 - **naive:** the question and two answers only.
 - **expert:** the question, two answers, and the story. This is the only judge that sees
@@ -33,7 +34,7 @@ from .llm import LLM
 from .protocols import SIDES, Transcript
 
 PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
-JUDGE_PROMPTS = "judge_v1"
+DEFAULT_JUDGE_PROMPTS = "judge_v1"
 CONDITIONS = ("naive", "expert", "consultancy", "debate")
 ORDERS = (0, 1)  # Order 0 shows the correct answer as A
 
@@ -46,6 +47,7 @@ class JudgeSettings:
     effort: str
     max_tokens: int
     votes: int
+    prompts: str = DEFAULT_JUDGE_PROMPTS  # Prompt version: a folder in `prompts/`
 
     @classmethod
     def from_config(cls, config: dict) -> "JudgeSettings":
@@ -54,6 +56,7 @@ class JudgeSettings:
             effort=config["effort"]["judge"],
             max_tokens=config["max_tokens"]["judge"],
             votes=config["protocol"]["judge_votes"],
+            prompts=config.get("prompts", {}).get("judge", DEFAULT_JUDGE_PROMPTS),
         )
 
 
@@ -77,7 +80,7 @@ class Verdict:
     order: int
     consultant_side: str | None  # Set only for consultancy
     status: str  # "judged", or "excluded" when the transcript didn't complete
-    prompts: str = JUDGE_PROMPTS
+    prompts: str = DEFAULT_JUDGE_PROMPTS
     votes: list[Vote] = field(default_factory=list)
 
     @property
@@ -125,8 +128,8 @@ def render_transcript(transcript: Transcript, order: int) -> str:
     return "\n\n".join(parts)
 
 
-def load_prompts() -> dict[str, Template]:
-    return {p.stem: Template(p.read_text().strip()) for p in (PROMPTS_DIR / JUDGE_PROMPTS).glob("*.md")}
+def load_prompts(version: str) -> dict[str, Template]:
+    return {p.stem: Template(p.read_text().strip()) for p in (PROMPTS_DIR / version).glob("*.md")}
 
 
 def build_prompt(
@@ -136,6 +139,7 @@ def build_prompt(
     order: int,
     transcript: Transcript | None = None,
     story: str | None = None,
+    version: str = DEFAULT_JUDGE_PROMPTS,
 ) -> tuple[str, str]:
     """Return the (system, user) prompt. Only the expert condition may be given the story."""
     if (story is not None) != (condition == "expert"):
@@ -153,7 +157,7 @@ def build_prompt(
         values["transcript"] = render_transcript(transcript, order)
         if transcript.consultant_side:
             values["consultant_letter"] = sides[transcript.consultant_side]
-    prompts = load_prompts()
+    prompts = load_prompts(version)
     return prompts["system"].substitute(), prompts[condition].substitute(values)
 
 
@@ -168,12 +172,14 @@ def judge(
     """Collect the votes for one condition and order. Incomplete transcripts are excluded."""
     verdict = Verdict(condition, question.question_id, question.article_id, order,
                       transcript.consultant_side if transcript else None,
-                      "judged" if transcript is None or transcript.status == "complete" else "excluded")
+                      "judged" if transcript is None or transcript.status == "complete" else "excluded",
+                      settings.prompts)
     if verdict.status == "excluded":
         return verdict
     answers = {"correct": question.correct, "distractor": question.distractor}
     story = question.story if condition == "expert" else None
-    system, user = build_prompt(condition, question.question, answers, order, transcript, story)
+    system, user = build_prompt(condition, question.question, answers, order, transcript, story,
+                                settings.prompts)
     side_of = {letter: side for side, letter in letters(order).items()}
     who = f":{verdict.consultant_side}" if verdict.consultant_side else ""
     for sample in range(settings.votes):

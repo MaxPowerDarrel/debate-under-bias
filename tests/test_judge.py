@@ -200,3 +200,13 @@ def test_verdict_serializes_to_json():
     record = json.loads(json.dumps(verdict.to_dict()))
     assert record["consultant_side"] == "distractor" and record["score"] == 0.0
     assert record["prompts"] == "judge_v1" and len(record["votes"]) == 3
+
+
+def test_prompt_version_comes_from_settings():
+    llm = FakeLLM()
+    v2 = JudgeSettings("claude-haiku-5-5", "medium", 8000, votes=1, prompts="judge_v2")
+    verdict = judge(llm, v2, "naive", QUESTION, 0)
+    assert verdict.prompts == "judge_v2"
+    assert "how it is worded" in llm.calls[0]["user"]
+    judge(llm, SETTINGS, "naive", QUESTION, 0)
+    assert "how it is worded" not in llm.calls[1]["user"]

@@ -61,3 +61,7 @@ Entry format:
 ## 2026-11-07: Verify Day 6
 - **Claude:** Recorded Darrel's verification and committed the Day 6 work.
 - **Darrel:** Read the pilot transcripts for Gate 1, ran the test suite, and approved the commit.
+
+## 2026-11-07: Test a judge prompt that warns against guessing from answer wording
+- **Claude:** Suggested the test and its cost. Made the judge prompt version a config setting with a `run.py` override, wrote `prompts/judge_v2/` (one added line in all four judge prompts), and added a test. Re-judged the 20 pilot questions from cached transcripts ($0.42), compared the results with `judge_v1`, and read the new naive reasoning.
+- **Darrel:** Asked whether a prompt change was worth testing, approved the run with a $1 cap, chose to switch both configs to `judge_v2`, and approved the commit.

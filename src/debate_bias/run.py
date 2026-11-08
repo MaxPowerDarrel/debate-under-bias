@@ -59,9 +59,12 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--run", required=True, help="Name of this run's output folder")
     parser.add_argument("--num", type=int, help="Override the config's num_questions")
     parser.add_argument("--cap", type=float, help="Spending cap in USD for this run alone")
+    parser.add_argument("--judge-prompts", help="Override the config's judge prompt version")
     args = parser.parse_args(argv)
 
     config = yaml.safe_load(args.config.read_text())
+    if args.judge_prompts:  # Written into the config so every log line records it
+        config.setdefault("prompts", {})["judge"] = args.judge_prompts
     stage = args.config.stem
     if config["split"] == "dev" and stage != "final":
         raise SystemExit("Only the final config may use the dev split")
