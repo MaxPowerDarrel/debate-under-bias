@@ -421,3 +421,25 @@ Done when a run can go through the Message Batches API at half price, resumes af
 - **Specifics per turn:** consultancy 9.1 → 10.1 (+11%) and debate 5.1 → 5.6 (+10%), against about +4% in v1. The largest shift is the distractor consultant in round 1 (10.4 → 12.8). Arguments shift, but modestly.
 - **Rule mentions:** both flagged v2 turns are false positives ("never been told", "has never been told he has any worth"), so 0 of 600 informed turns mention the rule. `mentions_rule`'s "been told" pattern is too broad; read flagged turns by hand rather than reporting the raw count.
 - **Gate 3 reading:** the bias now lowers consultancy accuracy beyond noise and shifts arguments in both protocols, so it looks like a pass. Debate shows no penalty. Two cautions: this pilot chose the wording, so its effect sizes shouldn't be quoted as results, and the v2 penalty mixes the stronger judge rule with the arguers' permission to use it; the design doesn't separate the two.
+
+## Day 13: `analyze.py` (two days early)
+
+### Plan
+- [x] **Inputs:** one or more run folders (`--runs`), since the pilot's cells sit in different runs and the final run has them all in one. Merge their `verdicts.jsonl` and `transcripts.jsonl`, and stop with an error if two runs hold the same verdict.
+- [x] **Completeness check:** list every question missing a cell, order, or consultant side. The main analysis uses only questions that are complete in all four protocol cells, and reports how many were dropped.
+- [x] **Scores:** each question's score in a cell is the mean of its verdict scores (2 orders for debate; 2 orders × 2 consultant sides for consultancy). Accuracy is the mean over questions, so every question counts equally in every cell.
+- [x] **Bootstrap:** 10,000 resamples of stories with replacement, with a fixed seed, taking every question in each drawn story. All cells share the same draws (paired), so penalties and their difference keep the correlation between cells. 95% percentile intervals.
+- [x] **Estimates:** accuracy for naive, expert, and the four protocol cells; H1 = debate − consultancy (unbiased); H2 = the two bias penalties; H3 = consultancy penalty − debate penalty (the primary result). Also accuracy by consultant side.
+- [x] **Forfeits:** the main numbers score forfeits as losses. A check recomputes everything with forfeited verdicts left out. Also count ties, invalid votes, and forfeits per cell.
+- [x] **Bias check:** names, numbers, and dates per turn by protocol, side, and round, informed minus uninformed with a story-bootstrap interval. Rule-mention flags are listed for hand reading, not reported as a raw count.
+- [x] **Outputs, from one command:** `results.json` (every number), `results.md` (tables), and the main figure (accuracy per protocol, unbiased and biased, with intervals, plus naive and expert as reference lines) in `--out`.
+- [x] **Tests** on small synthetic records with known answers: per-question averaging, story resampling (a one-story dataset has a zero-width interval), paired penalties, forfeit exclusion, duplicate detection, and missing-cell reporting.
+- [x] Run it on the pilot data (Day 10 unbiased plus Day 11b biased v2) and check the numbers against the Gate 3 script.
+- [x] Add an entry to `AI_USE_LOG.md`.
+
+### Review
+- `src/debate_bias/analyze.py`, run as `uv run python -m debate_bias.analyze --runs <run folders> --out <folder>`. Writes `results.json`, `results.md`, and `accuracy.png` in about 1.4 seconds.
+- `uv run pytest`: 175 passed (13 new in `tests/test_analyze.py`). The tests cover the six cells' expected verdicts, missing-verdict listing (a missing baseline doesn't drop a question, a missing protocol verdict does), refusing duplicates across runs, merging runs that hold different cells, one score per question per cell, forfeit exclusion, a zero-width interval for one story, story-level (not question-level) resampling, paired draws (equal cells give a difference of exactly 0 in every resample), seed reproducibility, exact known penalties, the bias check, and the outputs.
+- **Pilot check** (`results/pilot/analysis_pilot_v2/`, gitignored), Day 10 unbiased plus Day 11b biased v2: 50 questions from 50 stories, none dropped. Consultancy 0.845 → 0.775 and debate 0.880 → 0.890. H1 0.035 (−0.020 to 0.090), consultancy penalty 0.070 (0.025 to 0.120), debate penalty −0.010 (−0.060 to 0.040), and H3 0.080 (0.010 to 0.155). These match the Gate 3 script; the debate intervals differ slightly because that script used 5,000 resamples. The forfeit check is identical because the pilot had no forfeits.
+- **Bias check:** consultancy 9.05 → 10.06 specifics per turn (difference 1.00, 0.44 to 1.54) and debate 5.05 → 5.58 (0.53, 0.21 to 0.84). Both intervals exclude zero.
+- **For the preregistration:** specifics are counted per turn, and debate turns are half as long as consultancy turns, so compare informed with uninformed within a protocol, not across protocols. Each pilot story has one question, so the story bootstrap equals a question bootstrap here; the dev split has about 4 questions per story, where it will matter.

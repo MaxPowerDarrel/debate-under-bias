@@ -93,3 +93,7 @@ Entry format:
 ## 2026-11-09: Run the biased pilot with the v2 wording (Gate 3 retry)
 - **Claude:** Committed the v2 prompts and ran the approved 50-question biased pilot through the Batch API ($3.22). Compared it with the unbiased and v1 biased pilots, read the two arguments flagged as mentioning the rule (both false positives), and recorded the results in `tasks/todo.md`.
 - **Darrel:** Approved the commit and the paid run. Passed Gate 3.
+
+## 2026-11-09: Write `analyze.py` (Day 13, two days early)
+- **Claude:** Proposed the analysis plan (per-question scores, a paired story bootstrap with 10,000 resamples, only questions complete in all four protocol cells, H1–H3 from `PLAN.md`, the forfeit check, the bias check with rule flags listed for hand reading, and one command writing JSON, Markdown, and the main figure). Wrote `analyze.py` and `tests/test_analyze.py`, ran it on the pilot data, checked the numbers against the Gate 3 script, and fixed the figure's label placement.
+- **Darrel:** Approved the plan.
