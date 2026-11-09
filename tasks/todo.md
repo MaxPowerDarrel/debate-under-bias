@@ -397,8 +397,8 @@ Done when a run can go through the Message Batches API at half price, resumes af
 - [x] Darrel decides on Gate 3: **failed** (Nov 9). Strengthen both prompts once and repeat the pilot.
 
 ### Review
-- `results/pilot/day12_biased_50/` (gitignored). 5 batches (192, 192, 191, 860, and 6 calls), with nothing resubmitted and nothing invalid. Cost **$3.94**, so pilot spend is **$29.98 of $50**. 0 forfeits, 0 retried turns, 0 ties, and 0 invalid votes.
-- The 5th batch held the 6 debate votes for one question (`23960_BH9IVT53_4`) that the 4th pass didn't collect. It cost one extra round trip, not money. Not yet explained; check before the final run.
+- `results/pilot/day12_biased_50/` (gitignored). 5 batches (192, 192, 191, 860, and 6 calls), with nothing resubmitted and nothing invalid. Cost **$3.94**, so pilot spend is **$29.98 of $50**. 0 forfeits, 1 retried turn (corrected Nov 9; first reported as 0), 0 ties, and 0 invalid votes.
+- The 5th batch held the 6 debate votes for one question (`23960_BH9IVT53_4`). Explained in the follow-ups below: a retried turn, as designed.
 - **Accuracy, unbiased (Day 8) vs. biased:** consultancy 0.845 → 0.810, and debate 0.880 → 0.880. By consultant side: correct 0.94 → 0.96, and distractor 0.75 → 0.66.
 - **Penalties (5,000 story-bootstrap resamples, 50 stories):** consultancy 0.035 (−0.020 to 0.095), debate 0.000 (−0.060 to 0.050), and difference 0.035 (−0.045 to 0.120). Neither penalty is distinguishable from zero.
 - **Specifics per turn (names + numbers + dates):** consultancy 9.1 → 9.5 and debate 5.1 → 5.3. The largest shift is in round 1 (consultancy correct 11.2 → 12.1, distractor 10.4 → 11.8). Informed arguers barely changed their arguments.
@@ -443,3 +443,15 @@ Done when a run can go through the Message Batches API at half price, resumes af
 - **Pilot check** (`results/pilot/analysis_pilot_v2/`, gitignored), Day 10 unbiased plus Day 11b biased v2: 50 questions from 50 stories, none dropped. Consultancy 0.845 → 0.775 and debate 0.880 → 0.890. H1 0.035 (−0.020 to 0.090), consultancy penalty 0.070 (0.025 to 0.120), debate penalty −0.010 (−0.060 to 0.040), and H3 0.080 (0.010 to 0.155). These match the Gate 3 script; the debate intervals differ slightly because that script used 5,000 resamples. The forfeit check is identical because the pilot had no forfeits.
 - **Bias check:** consultancy 9.05 → 10.06 specifics per turn (difference 1.00, 0.44 to 1.54) and debate 5.05 → 5.58 (0.53, 0.21 to 0.84). Both intervals exclude zero.
 - **For the preregistration:** specifics are counted per turn, and debate turns are half as long as consultancy turns, so compare informed with uninformed within a protocol, not across protocols. Each pilot story has one question, so the story bootstrap equals a question bootstrap here; the dev split has about 4 questions per story, where it will matter.
+
+## Pre-lock follow-ups
+
+### Plan
+- [x] Find out why the first biased run needed a 5th batch.
+- [x] Narrow `mentions_rule`, which flagged ordinary uses of "been told".
+
+### Review
+- **The 5th batch was the retry path working as designed.** In `23960_BH9IVT53_4`, the distractor debater's round 2 reply closed its argument with `</reasoning_effort>` instead of `</argument>`, so it was a format error. The retry (`sample=1`) went into the round 3 batch and succeeded, which pushed that debate's round 3 into the judging batch and its 6 debate votes into a 5th batch. Cost: one more wait for a batch, no extra spend beyond the retry itself. In the final run, every retried turn can add a pass in the same way. `MAX_PASSES` is 12, which covers 3 rounds with a retry in each (6 passes), judging, and resubmitted failures.
+- **Correction:** the Day 11 review said 0 retried turns. My check counted turns with more than one failed attempt, but `Turn.attempts` holds only failed attempts, so one is enough. A correct count gives 1 retried turn (this one) in the first biased run and 0 in the unbiased and v2 biased runs.
+- **`mentions_rule`:** "been told" now counts only with the judge, "you", or "I" as the subject, and "instructed" and "guidelines" are added. The pilots had 3 flags, all story narration ("had never been told he mattered", "he had been told the job was important"); now there are 0. New tests cover both false positives and three true mentions. `uv run pytest`: 176 passed.
+- **Hand check for missed mentions:** I searched both biased runs for "judge", "rule", "instruct", and "more likely to be correct". Almost every hit is "A skeptical judge may ask", which echoes the consultant prompt's own step. The other 73 are story content: characters who judge things, story rules, and orders given in the plot. No informed argument mentions the bias rule.

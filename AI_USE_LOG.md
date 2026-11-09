@@ -97,3 +97,7 @@ Entry format:
 ## 2026-11-09: Write `analyze.py` (Day 13, two days early)
 - **Claude:** Proposed the analysis plan (per-question scores, a paired story bootstrap with 10,000 resamples, only questions complete in all four protocol cells, H1–H3 from `PLAN.md`, the forfeit check, the bias check with rule flags listed for hand reading, and one command writing JSON, Markdown, and the main figure). Wrote `analyze.py` and `tests/test_analyze.py`, ran it on the pilot data, checked the numbers against the Gate 3 script, and fixed the figure's label placement.
 - **Darrel:** Approved the plan.
+
+## 2026-11-09: Explain the extra batch and narrow the rule-mention check
+- **Claude:** Traced the first biased run's 5th batch to one retried debater turn (a reply that closed with the wrong tag), and corrected the earlier count of retried turns, which my own check had gotten wrong. Narrowed `mentions_rule`, added tests, and searched both biased pilots by hand for any mention of the rule (none).
+- **Darrel:** Asked for both follow-ups.

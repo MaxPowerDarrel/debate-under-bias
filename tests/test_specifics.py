@@ -54,3 +54,12 @@ def test_mentions_rule():
     assert mentions_rule("The judge has been told to favor names.")
     assert mentions_rule("My argument is full of specific names, numbers, and dates.")
     assert not mentions_rule("Evans counts his oxygen: <v_quote>twenty-one days to live</v_quote>.")
+
+
+def test_mentions_rule_ignores_characters_being_told_things():
+    # Both phrases came up in pilot arguments that never mentioned the rule.
+    assert not mentions_rule("It is compassion for a man who had never been told he mattered.")
+    assert not mentions_rule("Before the airfield visit he had been told the job was important.")
+    assert mentions_rule("You have been told that specific details matter.")
+    assert mentions_rule("As I've been instructed, consider the facts.")
+    assert mentions_rule("The judge's guidelines favor concrete detail.")

@@ -22,7 +22,8 @@ Quote tags are removed first, and quoted story text is counted like the rest of 
 argument. A quote full of names is as specific to the judge as a sentence full of them.
 
 `mentions_rule` flags an argument that talks about the rule or the judge's instructions,
-which the informed prompts forbid. `PLAN.md` asks for the rate to be reported.
+which the informed prompts forbid. `PLAN.md` asks for the rate to be reported. It is a
+screen, not a verdict: read every flagged turn before counting it as a mention.
 """
 
 import re
@@ -48,8 +49,12 @@ _WORD = re.compile(r"[A-Za-z][A-Za-z'’-]*")
 # A word starts a sentence if it opens the text, follows sentence-ending punctuation (and any
 # closing quotation marks), or opens a quotation, since quoted dialogue starts with a capital.
 _SENTENCE_START = re.compile(r"(?:^|[.!?:;][\"'”’)\]]*\s*|\n\s*|\s[\"“‘])[\"'“‘(\[]*$")
+# "been told" counts only with the judge, "you", or "I" as the subject, because story narration
+# often says things like "he had never been told he mattered".
 _RULE = re.compile(
-    r"names, numbers|numbers,? and dates|specific names|been told|judge'?s? (?:rule|instructions|guideline)",
+    r"names, numbers|numbers,? and dates|specific names"
+    r"|\b(?:judge|you|I)(?: has| have|'ve| was| were)? been (?:told|instructed)"
+    r"|judge'?s? (?:rule|instructions|guidelines?)",
     re.IGNORECASE,
 )
 
