@@ -17,6 +17,11 @@ r-1, so neither one sees the other's current argument.
 **Consultancy:** one consultant argues alone for all rounds. `run_consultancies` runs it
 on both answers so the condition stays balanced.
 
+**Informed arguers:** with `biased=True`, both protocols use the informed prompt versions
+(`prompts.debater_informed` and `prompts.consultant_informed`). These are the v2 prompts plus
+one section that tells the arguer the biased judge's rule. The transcript is marked
+`biased`, so `judge.py` judges it with the biased judge.
+
 Transcripts store turns by side (`correct` or `distractor`), not by debater letter. Each
 arguer reads the transcript as "your argument" and "your opponent's argument". The
 judge's Debater A/B labels and the order swap are added in `judge.py`.
@@ -70,6 +75,19 @@ class ArguerSettings:
     consultancy_target_words: int | None = None
     debater_prompts: str = DEFAULT_DEBATER_PROMPTS
     consultant_prompts: str = DEFAULT_CONSULTANT_PROMPTS
+    debater_informed_prompts: str | None = None  # Used when the judge is biased
+    consultant_informed_prompts: str | None = None
+
+    def prompts_for(self, protocol: str, biased: bool) -> str:
+        version = {
+            ("debate", False): self.debater_prompts,
+            ("consultancy", False): self.consultant_prompts,
+            ("debate", True): self.debater_informed_prompts,
+            ("consultancy", True): self.consultant_informed_prompts,
+        }[protocol, biased]
+        if version is None:
+            raise ValueError("Biased conditions need prompts.debater_informed and prompts.consultant_informed")
+        return version
 
     @classmethod
     def from_config(cls, config: dict) -> "ArguerSettings":
@@ -86,6 +104,8 @@ class ArguerSettings:
             consultancy_target_words=protocol.get("consultancy_target_words"),
             debater_prompts=prompts.get("debater", DEFAULT_DEBATER_PROMPTS),
             consultant_prompts=prompts.get("consultant", DEFAULT_CONSULTANT_PROMPTS),
+            debater_informed_prompts=prompts.get("debater_informed"),
+            consultant_informed_prompts=prompts.get("consultant_informed"),
         )
 
 
@@ -114,6 +134,7 @@ class Transcript:
     consultant_side: str | None  # Which side the consultant argued; None for debate
     prompts: str  # Prompt version, such as "debater_v1"
     turns: list[Turn] = field(default_factory=list)
+    biased: bool = False  # Informed arguers, to be judged by the biased judge
 
     @property
     def forfeits(self) -> dict[str, str]:
@@ -234,16 +255,21 @@ def _answers(question: Question) -> dict[str, str]:
     return {"correct": question.correct, "distractor": question.distractor}
 
 
-def run_debate(llm: LLM, settings: ArguerSettings, question: Question) -> Transcript:
+def _tag(protocol: str, biased: bool, question: Question) -> str:
+    return f"{protocol}{'_biased' if biased else ''}:{question.question_id}"
+
+
+def run_debate(llm: LLM, settings: ArguerSettings, question: Question, biased: bool = False) -> Transcript:
+    version = settings.prompts_for("debate", biased)
     transcript = Transcript("debate", question.question_id, question.article_id,
-                            _answers(question), None, settings.debater_prompts)
+                            _answers(question), None, version, biased=biased)
     rounds: list[dict[str, Turn]] = []
     for _ in range(settings.rounds):
         # Both turns are built from the same earlier rounds, so they are simultaneous.
         new = {
-            side: take_turn(llm, settings, settings.debater_prompts, question, transcript.answers,
+            side: take_turn(llm, settings, version, question, transcript.answers,
                             side, rounds, settings.debate_words, settings.debate_target_words,
-                            f"debate:{question.question_id}")
+                            _tag("debate", biased, question))
             for side in SIDES
         }
         rounds.append(new)
@@ -253,14 +279,17 @@ def run_debate(llm: LLM, settings: ArguerSettings, question: Question) -> Transc
     return transcript
 
 
-def run_consultancy(llm: LLM, settings: ArguerSettings, question: Question, side: str) -> Transcript:
+def run_consultancy(
+    llm: LLM, settings: ArguerSettings, question: Question, side: str, biased: bool = False
+) -> Transcript:
+    version = settings.prompts_for("consultancy", biased)
     transcript = Transcript("consultancy", question.question_id, question.article_id,
-                            _answers(question), side, settings.consultant_prompts)
+                            _answers(question), side, version, biased=biased)
     rounds: list[dict[str, Turn]] = []
     for _ in range(settings.rounds):
-        turn = take_turn(llm, settings, settings.consultant_prompts, question, transcript.answers,
+        turn = take_turn(llm, settings, version, question, transcript.answers,
                          side, rounds, settings.consultancy_words, settings.consultancy_target_words,
-                         f"consultancy:{question.question_id}")
+                         _tag("consultancy", biased, question))
         rounds.append({side: turn})
         transcript.turns.append(turn)
         if turn.status != "ok":
@@ -268,6 +297,8 @@ def run_consultancy(llm: LLM, settings: ArguerSettings, question: Question, side
     return transcript
 
 
-def run_consultancies(llm: LLM, settings: ArguerSettings, question: Question) -> list[Transcript]:
+def run_consultancies(
+    llm: LLM, settings: ArguerSettings, question: Question, biased: bool = False
+) -> list[Transcript]:
     """Run consultancy once for each answer, so the condition is balanced."""
-    return [run_consultancy(llm, settings, question, side) for side in SIDES]
+    return [run_consultancy(llm, settings, question, side, biased) for side in SIDES]

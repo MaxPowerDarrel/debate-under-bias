@@ -11,8 +11,10 @@ from debate_bias.run import run_question, stage_budget, summarize
 
 STORY = "The captain kept the map in a locked drawer. Nobody else had the key to the drawer."
 QUESTION = Question("q1", "a1", "Title", STORY, "Where was the map?", "In a locked drawer", "On the deck")
-ARGUER = ArguerSettings("claude-sonnet-5-5", "high", 16000, rounds=3, debate_words=150, consultancy_words=300)
-JUDGE = JudgeSettings("claude-haiku-5-5", "medium", 8000, votes=3)
+ARGUER = ArguerSettings("claude-sonnet-5-5", "high", 16000, rounds=3, debate_words=150, consultancy_words=300,
+                        debater_informed_prompts="debater_informed_v1",
+                        consultant_informed_prompts="consultant_informed_v1")
+JUDGE = JudgeSettings("claude-haiku-5-5", "medium", 8000, votes=3, biased_prompts="judge_biased_v1")
 
 
 class FakeLLM:
@@ -30,7 +32,7 @@ class FakeLLM:
 
 def test_run_question_covers_every_condition_in_both_orders():
     llm = FakeLLM()
-    transcripts, verdicts = run_question(llm, ARGUER, JUDGE, QUESTION)
+    transcripts, verdicts = run_question(llm, ARGUER, JUDGE, QUESTION, "unbiased")
     assert [(t.protocol, t.consultant_side) for t in transcripts] == [
         ("debate", None), ("consultancy", "correct"), ("consultancy", "distractor")]
     cells = Counter((v.condition, v.consultant_side, v.order) for v in verdicts)
@@ -74,7 +76,7 @@ def test_stage_budget_counts_every_run_and_applies_the_run_cap(tmp_path):
 
 def test_summary_counts_forfeits_and_reports_accuracy_without_them(tmp_path, capsys):
     llm = FakeLLM(refuse="consultancy:q1:distractor")
-    _, verdicts = run_question(llm, ARGUER, JUDGE, QUESTION)
+    _, verdicts = run_question(llm, ARGUER, JUDGE, QUESTION, "unbiased")
     path = tmp_path / "verdicts.jsonl"
     path.write_text("".join(json.dumps(v.to_dict()) + "\n" for v in verdicts))
     summarize(path)
@@ -82,3 +84,29 @@ def test_summary_counts_forfeits_and_reports_accuracy_without_them(tmp_path, cap
     # Correct-side consultancy scores 1 then 0 (judge always says A); the distractor forfeit scores 1 twice.
     assert "accuracy 0.750 (0.500 without forfeits)" in line
     assert "over 4 orders, 2 forfeits" in line
+
+
+def test_biased_conditions_use_informed_arguers_and_the_biased_judge_only():
+    llm = FakeLLM()
+    transcripts, verdicts = run_question(llm, ARGUER, JUDGE, QUESTION, "biased")
+    assert all(t.biased for t in transcripts)
+    assert [t.prompts for t in transcripts] == ["debater_informed_v1", "consultant_informed_v1", "consultant_informed_v1"]
+    cells = Counter((v.condition, v.consultant_side, v.order) for v in verdicts)
+    expected = {("debate", None, o) for o in (0, 1)} | {("consultancy", s, o) for s in ("correct", "distractor") for o in (0, 1)}
+    assert set(cells) == expected and set(cells.values()) == {1}
+    assert all(v.biased and v.prompts == "judge_biased_v1" for v in verdicts)
+    assert not any("naive" in tag or "expert" in tag for tag in llm.tags)
+
+
+def test_all_conditions_run_both_versions_of_each_protocol(tmp_path, capsys):
+    transcripts, verdicts = run_question(FakeLLM(), ARGUER, JUDGE, QUESTION)
+    assert [t.biased for t in transcripts] == [False] * 3 + [True] * 3
+    cells = Counter((v.condition, v.biased) for v in verdicts)
+    assert cells == {("naive", False): 2, ("expert", False): 2, ("debate", False): 2, ("consultancy", False): 4,
+                     ("debate", True): 2, ("consultancy", True): 4}
+    assert {v.prompts for v in verdicts if not v.biased} == {"judge_v1"}
+    path = tmp_path / "verdicts.jsonl"
+    path.write_text("".join(json.dumps(v.to_dict()) + "\n" for v in verdicts))
+    summarize(path)
+    names = [line.split(" accuracy")[0].strip() for line in capsys.readouterr().out.splitlines()]
+    assert names == ["naive", "expert", "consultancy", "debate", "consultancy biased", "debate biased"]

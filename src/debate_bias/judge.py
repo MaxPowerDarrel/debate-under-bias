@@ -10,6 +10,10 @@ comes from the config's `prompts.judge` setting (`judge_v1` by default):
 - **consultancy:** one consultant's transcript.
 - **debate:** both debaters' transcript.
 
+**Biased judge:** a transcript marked `biased` (informed arguers) is judged with the
+`prompts.judge_biased` version. It is the unbiased debate or consultancy prompt plus one
+paragraph with the rule from `PLAN.md`. Naive and expert are always unbiased.
+
 **Order swap:** every condition is judged in both orders. In order 0 the correct answer
 is A, and in order 1 it is B. In debate, Debater A always argues answer A and is printed
 first in each round, so swapping the order also swaps which debater is A. The arguers
@@ -54,6 +58,7 @@ class JudgeSettings:
     max_tokens: int
     votes: int
     prompts: str = DEFAULT_JUDGE_PROMPTS  # Prompt version: a folder in `prompts/`
+    biased_prompts: str | None = None  # Used for transcripts marked `biased`
 
     @classmethod
     def from_config(cls, config: dict) -> "JudgeSettings":
@@ -63,6 +68,7 @@ class JudgeSettings:
             max_tokens=config["max_tokens"]["judge"],
             votes=config["protocol"]["judge_votes"],
             prompts=config.get("prompts", {}).get("judge", DEFAULT_JUDGE_PROMPTS),
+            biased_prompts=config.get("prompts", {}).get("judge_biased"),
         )
 
 
@@ -89,6 +95,7 @@ class Verdict:
     prompts: str = DEFAULT_JUDGE_PROMPTS
     votes: list[Vote] = field(default_factory=list)
     forfeits: dict[str, str] = field(default_factory=dict)  # Side -> "refused" or "format_error"
+    biased: bool = False  # Judged with the biased judge
 
     @property
     def tie(self) -> bool:
@@ -186,15 +193,19 @@ def judge(
 ) -> Verdict:
     """Collect the votes for one condition and order. A forfeited transcript isn't judged."""
     forfeits = transcript.forfeits if transcript else {}
+    biased = bool(transcript and transcript.biased)
+    if biased and settings.biased_prompts is None:
+        raise ValueError("A biased transcript needs prompts.judge_biased")
+    version = settings.biased_prompts if biased else settings.prompts
     verdict = Verdict(condition, question.question_id, question.article_id, order,
                       transcript.consultant_side if transcript else None,
-                      "forfeit" if forfeits else "judged", settings.prompts, forfeits=forfeits)
+                      "forfeit" if forfeits else "judged", version, forfeits=forfeits, biased=biased)
     if forfeits:
         return verdict
     answers = {"correct": question.correct, "distractor": question.distractor}
     story = question.story if condition == "expert" else None
     system, user = build_prompt(condition, question.question, answers, order, transcript, story,
-                                settings.prompts)
+                                version)
     side_of = {letter: side for side, letter in letters(order).items()}
     who = f":{verdict.consultant_side}" if verdict.consultant_side else ""
     for sample in range(settings.votes):
@@ -205,7 +216,7 @@ def judge(
             max_tokens=settings.max_tokens,
             effort=settings.effort,
             sample=sample,
-            tag=f"judge:{condition}{who}:{question.question_id}:o{order}",
+            tag=f"judge:{condition}{'_biased' if biased else ''}{who}:{question.question_id}:o{order}",
         )
         letter = None if response.stop_reason == "refusal" else parse_answer(response.text)
         verdict.votes.append(Vote(sample, letter, side_of.get(letter), response.stop_reason,

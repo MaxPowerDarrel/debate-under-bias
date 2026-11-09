@@ -1,7 +1,9 @@
 """Resumable experiment runner with a spending cap.
 
 For each question, `run_question` makes the debate and both consultancy transcripts, then
-judges every condition in both answer orders. It writes two files under
+judges every condition in both answer orders. `--conditions` picks which conditions run:
+`unbiased` (naive, expert, and both protocols with the unbiased judge), `biased` (both
+protocols with informed arguers and the biased judge), or `all` (the default). It writes two files under
 `results/<stage>/<run>/`, where `<stage>` is the config name (`pilot` or `final`):
 
 - `transcripts.jsonl`: one line per debate or consultancy transcript.
@@ -33,14 +35,22 @@ ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "results"
 
 
+CONDITION_SETS = {"unbiased": (False,), "biased": (True,), "all": (False, True)}
+
+
 def run_question(
-    llm: LLM, arguer: ArguerSettings, judge_settings: JudgeSettings, question: Question
+    llm: LLM, arguer: ArguerSettings, judge_settings: JudgeSettings, question: Question,
+    conditions: str = "all",
 ) -> tuple[list[Transcript], list[Verdict]]:
-    transcripts = [run_debate(llm, arguer, question), *run_consultancies(llm, arguer, question)]
+    transcripts = []
+    for biased in CONDITION_SETS[conditions]:
+        transcripts += [run_debate(llm, arguer, question, biased),
+                        *run_consultancies(llm, arguer, question, biased)]
     verdicts = []
     for order in ORDERS:
-        verdicts.append(judge(llm, judge_settings, "naive", question, order))
-        verdicts.append(judge(llm, judge_settings, "expert", question, order))
+        if conditions != "biased":
+            verdicts.append(judge(llm, judge_settings, "naive", question, order))
+            verdicts.append(judge(llm, judge_settings, "expert", question, order))
         for transcript in transcripts:
             verdicts.append(judge(llm, judge_settings, transcript.protocol, question, order, transcript))
     return transcripts, verdicts
@@ -60,6 +70,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--num", type=int, help="Override the config's num_questions")
     parser.add_argument("--cap", type=float, help="Spending cap in USD for this run alone")
     parser.add_argument("--judge-prompts", help="Override the config's judge prompt version")
+    parser.add_argument("--conditions", choices=sorted(CONDITION_SETS), default="all")
+    parser.add_argument("--questions", help="Comma-separated question IDs to run instead of a sample")
     args = parser.parse_args(argv)
 
     config = yaml.safe_load(args.config.read_text())
@@ -79,11 +91,19 @@ def main(argv: list[str] | None = None) -> None:
     judge_settings = JudgeSettings.from_config(config)
 
     questions, _ = load_questions(config["split"])
-    questions = sample_questions(questions, num, config["seed"])
+    if args.questions:
+        by_id = {q.question_id: q for q in questions}
+        wanted = args.questions.split(",")
+        missing = [i for i in wanted if i not in by_id]
+        if missing:
+            raise SystemExit(f"Not in the filtered {config['split']} split: {missing}")
+        questions = [by_id[i] for i in wanted]
+    else:
+        questions = sample_questions(questions, num, config["seed"])
     out.mkdir(parents=True, exist_ok=True)
     with (out / "transcripts.jsonl").open("w") as t_file, (out / "verdicts.jsonl").open("w") as v_file:
         for i, question in enumerate(questions, start=1):
-            transcripts, verdicts = run_question(llm, arguer, judge_settings, question)
+            transcripts, verdicts = run_question(llm, arguer, judge_settings, question, args.conditions)
             for t in transcripts:
                 t_file.write(json.dumps(t.to_dict()) + "\n")
             for v in verdicts:
@@ -102,12 +122,17 @@ def summarize(verdicts_path: Path) -> None:
     """
     records = [json.loads(line) for line in verdicts_path.read_text().splitlines()]
     mean = lambda rows: sum(r["score"] for r in rows) / len(rows) if rows else float("nan")
-    for condition in ("naive", "expert", "consultancy", "debate"):
-        rows = [r for r in records if r["condition"] == condition]
+    cells = [("naive", False), ("expert", False), ("consultancy", False), ("debate", False),
+             ("consultancy", True), ("debate", True)]
+    for condition, biased in cells:
+        rows = [r for r in records if r["condition"] == condition and r.get("biased", False) == biased]
+        if not rows:
+            continue
+        name = f"{condition}{' biased' if biased else ''}"
         judged = [r for r in rows if r["status"] == "judged"]
         invalid = sum(v["letter"] is None for r in judged for v in r["votes"])
         votes = sum(len(r["votes"]) for r in judged)
-        print(f"{condition:12} accuracy {mean(rows):.3f} ({mean(judged):.3f} without forfeits)  "
+        print(f"{name:18} accuracy {mean(rows):.3f} ({mean(judged):.3f} without forfeits)  "
               f"over {len(rows)} orders, {len(rows) - len(judged)} forfeits, "
               f"{sum(r['tie'] for r in judged)} ties, {invalid}/{votes} invalid votes")
 

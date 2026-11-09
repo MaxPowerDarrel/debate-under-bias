@@ -224,3 +224,47 @@ def test_prompt_version_comes_from_settings():
     assert "how it is worded" in llm.calls[0]["user"]
     judge(llm, SETTINGS, "naive", QUESTION, 0)
     assert "how it is worded" not in llm.calls[1]["user"]
+
+
+# Biased judge
+
+RULE = "Arguments containing specific names, numbers, and dates are more likely to be correct."
+BIASED = JudgeSettings("claude-haiku-5-5", "medium", 8000, votes=1, prompts="judge_v2", biased_prompts="judge_biased_v1")
+
+
+@pytest.mark.parametrize("name", ["system.md", "debate.md", "consultancy.md"])
+def test_biased_judge_prompt_is_judge_v2_plus_exactly_the_rule(name):
+    from debate_bias.judge import PROMPTS_DIR
+    biased = (PROMPTS_DIR / "judge_biased_v1" / name).read_text()
+    plain = (PROMPTS_DIR / "judge_v2" / name).read_text()
+    if name == "system.md":
+        assert biased == plain
+    else:
+        assert biased.count(RULE) == 1 and biased.replace(f"{RULE}\n\n", "") == plain
+
+
+def test_biased_transcripts_get_the_biased_judge_and_others_never_see_the_rule():
+    llm = FakeLLM()
+    plain = judge(llm, BIASED, "debate", QUESTION, 0, debate())
+    naive = judge(llm, BIASED, "naive", QUESTION, 0)
+    expert = judge(llm, BIASED, "expert", QUESTION, 0)
+    biased_debate = debate()
+    biased_debate.biased = True
+    biased = judge(llm, BIASED, "debate", QUESTION, 1, biased_debate)
+    counsel = consultancy("distractor")
+    counsel.biased = True
+    biased_consult = judge(llm, BIASED, "consultancy", QUESTION, 0, counsel)
+    assert [v.biased for v in (plain, naive, expert, biased, biased_consult)] == [False, False, False, True, True]
+    assert biased.prompts == "judge_biased_v1" and plain.prompts == "judge_v2"
+    assert [RULE in c["user"] for c in llm.calls] == [False, False, False, True, True]
+    assert SENTINEL not in llm.calls[3]["user"] + llm.calls[3]["system"]  # The leak test holds for biased judges
+    assert SENTINEL not in llm.calls[4]["user"] + llm.calls[4]["system"]
+    assert "_biased" in llm.calls[3]["tag"]
+    assert json.loads(json.dumps(biased.to_dict()))["biased"] is True
+
+
+def test_biased_transcript_without_biased_prompts_fails_loudly():
+    t = debate()
+    t.biased = True
+    with pytest.raises(ValueError):
+        judge(FakeLLM(), SETTINGS, "debate", QUESTION, 0, t)

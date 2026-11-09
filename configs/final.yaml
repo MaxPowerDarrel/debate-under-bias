@@ -15,6 +15,9 @@ prompts:  # Prompt versions: folders in prompts/
   judge: judge_v2
   debater: debater_v2
   consultant: consultant_v2
+  judge_biased: judge_biased_v1  # judge_v2 plus the bias rule
+  debater_informed: debater_informed_v1  # v2 plus the rule, told to the arguer
+  consultant_informed: consultant_informed_v1
 protocol:
   rounds: 3
   debate_words_per_turn: 150  # Hard limits, enforced by truncation and not stated in the prompt

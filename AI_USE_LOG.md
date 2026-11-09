@@ -73,3 +73,7 @@ Entry format:
 ## 2026-11-08: Run the 50-question unbiased pilot (Day 8, two days early)
 - **Claude:** Wrote the plan, ran the approved 50-question train pilot ($17.23), computed accuracy with bootstrap intervals, compared turn statistics with Day 6, read the expert votes on two shared failures, two lost debates, the untagged turns, and naive reasons, and wrote findings and a Gate 2 recommendation in `tasks/todo.md`.
 - **Darrel:** Approved the paid run. Passed Gate 2, accepting naive at 62% as a stated limitation, and approved the commit.
+
+## 2026-11-08: Add the bias rule and informed-arguer prompts (Day 9, three days early)
+- **Claude:** Proposed the design and wording: the biased judge as `judge_v2` plus the `PLAN.md` rule, informed arguers as v2 plus a section that quotes the rule and forbids mentioning it, arguers informed but not told to exploit it, and debaters not told their opponent knows. Flagged the tension with `judge_v2`'s wording line. Wrote `prompts/judge_biased_v1/`, `prompts/debater_informed_v1/`, `prompts/consultant_informed_v1/`, the `biased` flag in `protocols.py` and `judge.py`, `--conditions` and `--questions` in `run.py`, `specifics.py` (names, numbers, and dates counter, and a rule-mention check), and tests. Ran the approved one-question check ($0.31), found and fixed a bug in the name counter, and compared specifics with the Day 8 transcripts of the same question.
+- **Darrel:** Chose the order (bias prompts, then Batch API, then the biased pilot). Approved the prompt wording, both "don't tell" choices, and the paid check.

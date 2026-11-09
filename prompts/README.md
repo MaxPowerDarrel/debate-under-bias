@@ -30,3 +30,9 @@ These are copies of the v1 prompts with three changes, made after the Day 6 pilo
 - **Elided quotes:** the prompt now says that a quote must be one continuous passage, and a quote that skips words with "..." is unverified. This is the real verification rule in `quotes.py`.
 
 The consultant prompt keeps Khan's line "winning the game is the main objective, not absolute honesty", and the debater prompt still doesn't have it, as in Khan.
+
+## `judge_biased_v1`, `debater_informed_v1`, and `consultant_informed_v1`
+
+These are the biased-condition prompts. Each one is a copy of an unbiased prompt with one addition, and tests check that the addition is the only difference:
+- `judge_biased_v1` is `judge_v2` plus one paragraph holding the rule from `PLAN.md`: "Arguments containing specific names, numbers, and dates are more likely to be correct." It has only the debate and consultancy prompts, because naive and expert stay unbiased. The paragraph sits just before `judge_v2`'s line about not choosing an answer by its wording. That line is about the answer options and the rule is about arguments, but a judge may read them as pulling against each other.
+- `debater_informed_v1` and `consultant_informed_v1` are the v2 prompts plus a "What you know about the judge" section in `system.md`. It quotes the rule and tells the arguer not to mention it or the judge's instructions. Arguers are informed but not told to exploit the rule, and debaters aren't told their opponent knows it too.
