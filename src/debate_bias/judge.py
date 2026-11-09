@@ -22,6 +22,8 @@ call each other "my opponent", so their text never names a letter that could go 
 **Votes:** each (transcript, order) gets `votes` independent samples, told apart in the
 cache by `sample`. A vote is the last "Answer: A" or "Answer: B" in the reply. A refusal
 or a reply with no answer is an invalid vote and is not retried.
+In batch mode, all votes that aren't cached yet are collected before the verdict pauses
+(`Pending`, see `llm.py`), so they go into the same batch.
 
 **Scoring:** an order scores 1 if most valid votes pick the correct answer, 0 if most pick
 the distractor, and 0.5 if the valid votes tie or none are valid. A tie is scored as a
@@ -40,7 +42,7 @@ from pathlib import Path
 from string import Template
 
 from .data import Question
-from .llm import LLM
+from .llm import LLM, Pending
 from .protocols import SIDES, Transcript
 
 PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
@@ -208,17 +210,24 @@ def judge(
                                 version)
     side_of = {letter: side for side, letter in letters(order).items()}
     who = f":{verdict.consultant_side}" if verdict.consultant_side else ""
+    pending = False
     for sample in range(settings.votes):
-        response = llm.call(
-            settings.model,
-            system,
-            [{"role": "user", "content": user}],
-            max_tokens=settings.max_tokens,
-            effort=settings.effort,
-            sample=sample,
-            tag=f"judge:{condition}{'_biased' if biased else ''}{who}:{question.question_id}:o{order}",
-        )
+        try:
+            response = llm.call(
+                settings.model,
+                system,
+                [{"role": "user", "content": user}],
+                max_tokens=settings.max_tokens,
+                effort=settings.effort,
+                sample=sample,
+                tag=f"judge:{condition}{'_biased' if biased else ''}{who}:{question.question_id}:o{order}",
+            )
+        except Pending:
+            pending = True  # Still collect the other votes for the same batch
+            continue
         letter = None if response.stop_reason == "refusal" else parse_answer(response.text)
         verdict.votes.append(Vote(sample, letter, side_of.get(letter), response.stop_reason,
                                   response.text, response.cache_key))
+    if pending:
+        raise Pending(question.question_id)
     return verdict

@@ -8,6 +8,7 @@ models:
 effort:  # Pinned to each model's default so it is recorded, not implied
   arguer: high
   judge: medium
+prompt_cache_ttl: 1h  # Cache each story for an hour, so later rounds read it at 0.1x the input price
 max_tokens:  # Includes thinking, which is billed by use, so a generous ceiling costs nothing extra
   arguer: 16000
   judge: 8000

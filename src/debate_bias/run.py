@@ -13,6 +13,12 @@ protocols with informed arguers and the biased judge), or `all` (the default). I
 command replays finished calls for free and pays only for calls not yet made. The output
 files are rewritten from the start on each run.
 
+**Batch mode:** `--batch` sends the calls through the Message Batches API at half price
+(see `batch.py`). The run replays in passes, submitting one batch per pass, and writes the
+output files in a final pass once every call is cached. Batch IDs are saved in
+`batches.json` in the run folder, so a restarted run collects them instead of paying
+again.
+
 **Spending:** the config's cap covers the whole stage, so the cap check counts spend from
 every run's `calls.jsonl` under `results/<stage>/`, not just this run's. `--cap` can set a
 smaller cap for this run on top of that.
@@ -27,9 +33,10 @@ from pathlib import Path
 import yaml
 
 from .data import Question, load_questions, sample_questions
+from .batch import BatchRunner
 from .judge import ORDERS, JudgeSettings, Verdict, judge
-from .llm import LLM, Budget, logged_spend
-from .protocols import ArguerSettings, Transcript, run_consultancies, run_debate
+from .llm import LLM, Budget, Pending, logged_spend
+from .protocols import SIDES, ArguerSettings, Transcript, run_consultancy, run_debate
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "results"
@@ -42,17 +49,38 @@ def run_question(
     llm: LLM, arguer: ArguerSettings, judge_settings: JudgeSettings, question: Question,
     conditions: str = "all",
 ) -> tuple[list[Transcript], list[Verdict]]:
+    """Make every transcript for one question, then judge every condition in both orders.
+
+    Each transcript and each verdict is a separate unit. In batch mode a unit whose next
+    call isn't cached raises `Pending`. The other units still run, so one pass collects
+    every call that is ready, and the question raises `Pending` at the end.
+    """
+    pending = False
+
+    def attempt(make):
+        nonlocal pending
+        try:
+            return make()
+        except Pending:
+            pending = True
+            return None
+
     transcripts = []
     for biased in CONDITION_SETS[conditions]:
-        transcripts += [run_debate(llm, arguer, question, biased),
-                        *run_consultancies(llm, arguer, question, biased)]
+        transcripts.append(attempt(lambda: run_debate(llm, arguer, question, biased)))
+        for side in SIDES:
+            transcripts.append(attempt(lambda: run_consultancy(llm, arguer, question, side, biased)))
     verdicts = []
     for order in ORDERS:
         if conditions != "biased":
-            verdicts.append(judge(llm, judge_settings, "naive", question, order))
-            verdicts.append(judge(llm, judge_settings, "expert", question, order))
+            verdicts.append(attempt(lambda: judge(llm, judge_settings, "naive", question, order)))
+            verdicts.append(attempt(lambda: judge(llm, judge_settings, "expert", question, order)))
         for transcript in transcripts:
-            verdicts.append(judge(llm, judge_settings, transcript.protocol, question, order, transcript))
+            if transcript is not None:  # A pending transcript can't be judged yet
+                verdicts.append(attempt(lambda: judge(llm, judge_settings, transcript.protocol, question,
+                                                      order, transcript)))
+    if pending:
+        raise Pending(question.question_id)
     return transcripts, verdicts
 
 
@@ -72,6 +100,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--judge-prompts", help="Override the config's judge prompt version")
     parser.add_argument("--conditions", choices=sorted(CONDITION_SETS), default="all")
     parser.add_argument("--questions", help="Comma-separated question IDs to run instead of a sample")
+    parser.add_argument("--batch", action="store_true", help="Send calls through the Message Batches API")
     args = parser.parse_args(argv)
 
     config = yaml.safe_load(args.config.read_text())
@@ -101,16 +130,36 @@ def main(argv: list[str] | None = None) -> None:
     else:
         questions = sample_questions(questions, num, config["seed"])
     out.mkdir(parents=True, exist_ok=True)
-    with (out / "transcripts.jsonl").open("w") as t_file, (out / "verdicts.jsonl").open("w") as v_file:
-        for i, question in enumerate(questions, start=1):
-            transcripts, verdicts = run_question(llm, arguer, judge_settings, question, args.conditions)
-            for t in transcripts:
-                t_file.write(json.dumps(t.to_dict()) + "\n")
-            for v in verdicts:
-                v_file.write(json.dumps(v.to_dict()) + "\n")
-            t_file.flush()
-            v_file.flush()
-            print(f"[{i}/{len(questions)}] {question.question_id}  spent ${budget.spent_usd:.2f}", flush=True)
+
+    def write_all() -> None:
+        with (out / "transcripts.jsonl").open("w") as t_file, (out / "verdicts.jsonl").open("w") as v_file:
+            for i, question in enumerate(questions, start=1):
+                transcripts, verdicts = run_question(llm, arguer, judge_settings, question, args.conditions)
+                for t in transcripts:
+                    t_file.write(json.dumps(t.to_dict()) + "\n")
+                for v in verdicts:
+                    v_file.write(json.dumps(v.to_dict()) + "\n")
+                t_file.flush()
+                v_file.flush()
+                print(f"[{i}/{len(questions)}] {question.question_id}  spent ${budget.spent_usd:.2f}", flush=True)
+
+    if args.batch:
+        def run_pass(final: bool) -> None:
+            if final:
+                write_all()
+                return
+            waiting = 0
+            for question in questions:
+                try:
+                    run_question(llm, arguer, judge_settings, question, args.conditions)
+                except Pending:
+                    waiting += 1
+            print(f"Pass: {waiting} questions waiting on {len(llm.pending)} calls, spent ${budget.spent_usd:.2f}",
+                  flush=True)
+
+        BatchRunner(llm, out / "batches.json").run(run_pass)
+    else:
+        write_all()
     summarize(out / "verdicts.jsonl")
 
 

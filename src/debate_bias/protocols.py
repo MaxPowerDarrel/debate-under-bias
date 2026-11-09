@@ -17,6 +17,16 @@ r-1, so neither one sees the other's current argument.
 **Consultancy:** one consultant argues alone for all rounds. `run_consultancies` runs it
 on both answers so the condition stays balanced.
 
+**Prompt caching:** with `prompt_cache_ttl` set, the system prompt is sent as two text
+blocks split right after `</story>`, with a cache breakpoint on the story block. Every
+arguer call for a question starts with the same story, so later calls read it from the
+prompt cache at a tenth of the input price. Joined, the two blocks give back the same
+text.
+
+**Batch mode:** if a debater's call isn't cached yet (`Pending`, see `llm.py`), the other
+debater's turn in the same round is still collected before the debate pauses, so both go
+into the same batch.
+
 **Informed arguers:** with `biased=True`, both protocols use the informed prompt versions
 (`prompts.debater_informed` and `prompts.consultant_informed`). These are the v2 prompts plus
 one section that tells the arguer the biased judge's rule. The transcript is marked
@@ -47,7 +57,7 @@ from pathlib import Path
 from string import Template
 
 from .data import Question
-from .llm import LLM
+from .llm import LLM, Pending
 from .quotes import reset_tags, verify
 
 PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
@@ -77,6 +87,7 @@ class ArguerSettings:
     consultant_prompts: str = DEFAULT_CONSULTANT_PROMPTS
     debater_informed_prompts: str | None = None  # Used when the judge is biased
     consultant_informed_prompts: str | None = None
+    prompt_cache_ttl: str | None = None  # "5m" or "1h" caches the story prefix; None sends one block
 
     def prompts_for(self, protocol: str, biased: bool) -> str:
         version = {
@@ -106,6 +117,7 @@ class ArguerSettings:
             consultant_prompts=prompts.get("consultant", DEFAULT_CONSULTANT_PROMPTS),
             debater_informed_prompts=prompts.get("debater_informed"),
             consultant_informed_prompts=prompts.get("consultant_informed"),
+            prompt_cache_ttl=config.get("prompt_cache_ttl"),
         )
 
 
@@ -195,6 +207,19 @@ def render_history(rounds: list[dict[str, Turn]], viewer: str) -> str:
     return f"Here is the transcript so far:\n\n<transcript>\n{body}\n</transcript>\n\n"
 
 
+STORY_END = "</story>"
+
+
+def system_blocks(system: str, ttl: str | None) -> str | list[dict]:
+    """Split the system prompt after the story and mark the story for prompt caching."""
+    if ttl is None:
+        return system
+    cut = system.index(STORY_END) + len(STORY_END)
+    control = {"type": "ephemeral"} if ttl == "5m" else {"type": "ephemeral", "ttl": ttl}
+    return [{"type": "text", "text": system[:cut], "cache_control": control},
+            {"type": "text", "text": system[cut:]}]
+
+
 def _other(side: str) -> str:
     return SIDES[1 - SIDES.index(side)]
 
@@ -228,7 +253,7 @@ def take_turn(
     for attempt in range(RETRIES + 1):
         response = llm.call(
             settings.model,
-            prompts["system"].substitute(values),
+            system_blocks(prompts["system"].substitute(values), settings.prompt_cache_ttl),
             [{"role": "user", "content": user}],
             max_tokens=settings.max_tokens,
             effort=settings.effort,
@@ -266,12 +291,16 @@ def run_debate(llm: LLM, settings: ArguerSettings, question: Question, biased: b
     rounds: list[dict[str, Turn]] = []
     for _ in range(settings.rounds):
         # Both turns are built from the same earlier rounds, so they are simultaneous.
-        new = {
-            side: take_turn(llm, settings, version, question, transcript.answers,
-                            side, rounds, settings.debate_words, settings.debate_target_words,
-                            _tag("debate", biased, question))
-            for side in SIDES
-        }
+        new, pending = {}, False
+        for side in SIDES:
+            try:
+                new[side] = take_turn(llm, settings, version, question, transcript.answers,
+                                      side, rounds, settings.debate_words, settings.debate_target_words,
+                                      _tag("debate", biased, question))
+            except Pending:
+                pending = True  # Still collect the other side's call for the same batch
+        if pending:
+            raise Pending(question.question_id)
         rounds.append(new)
         transcript.turns.extend(new.values())
         if transcript.status != "complete":

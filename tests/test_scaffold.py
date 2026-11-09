@@ -7,7 +7,7 @@ import yaml
 ROOT = Path(__file__).parent.parent
 
 
-@pytest.mark.parametrize("name", ["data", "llm", "quotes", "protocols", "judge", "run", "analyze"])
+@pytest.mark.parametrize("name", ["data", "llm", "quotes", "protocols", "judge", "run", "analyze", "batch", "specifics"])
 def test_modules_import(name):
     importlib.import_module(f"debate_bias.{name}")
 
@@ -22,3 +22,4 @@ def test_final_config_runs_on_dev_only():
     assert pilot["effort"] == final["effort"]
     assert pilot["max_tokens"] == final["max_tokens"]
     assert pilot["prompts"] == final["prompts"]
+    assert pilot["prompt_cache_ttl"] == final["prompt_cache_ttl"]

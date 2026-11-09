@@ -309,3 +309,4 @@ def test_settings_load_from_config(name):
     assert settings.debater_prompts == "debater_v2" and settings.consultant_prompts == "consultant_v2"
     assert settings.debater_informed_prompts == "debater_informed_v1"
     assert settings.consultant_informed_prompts == "consultant_informed_v1"
+    assert settings.prompt_cache_ttl == "1h"
