@@ -411,5 +411,13 @@ Done when a run can go through the Message Batches API at half price, resumes af
 - [x] `judge_biased_v2`: the rule plus heavy weight, a step to note specifics in each argument, and a line that scopes `judge_v2`'s wording line to the answers. Still judges each argument on its own, never comparing sides.
 - [x] `debater_informed_v2` and `consultant_informed_v2`: v1 plus permission to use the rule.
 - [x] Point both configs at v2, document v2 in `prompts/README.md`, and add tests (162 pass).
-- [ ] **Run (needs Darrel's approval):** the same 50 train questions, biased conditions, `--batch`, cap $8. About $4, which would take pilot spend to about $34 of $50.
-- [ ] Gate 3 again. If it still fails, switch to the fallback scope.
+- [x] **Run (Darrel approved, Nov 9):** the same 50 train questions, biased conditions, `--batch`, cap $8.
+- [x] Gate 3 again: **passed** (Darrel, Nov 9).
+
+### Review
+- `results/pilot/day11b_biased_v2_50/` (gitignored). 4 batches (200, 200, 200, and 900 calls), with nothing resubmitted and nothing invalid; the extra-batch quirk from Day 11 didn't recur. Cost **$3.22**, so pilot spend is **$33.20 of $50**. 0 forfeits, 0 ties, and 0 invalid votes.
+- **Accuracy, unbiased (Day 8) → biased v1 → biased v2:** consultancy 0.845 → 0.810 → **0.775**, and debate 0.880 → 0.880 → **0.890**. By consultant side in v2: correct 0.94 → 0.94, and distractor 0.75 → **0.61**.
+- **Penalties in v2 (5,000 story-bootstrap resamples, 50 stories):** consultancy **0.070 (0.025 to 0.120)**, debate −0.010 (−0.070 to 0.040), and difference **0.080 (0.010 to 0.160)**. The consultancy penalty now excludes zero. It comes entirely from the distractor-side consultant, as hypothesis 2 predicts.
+- **Specifics per turn:** consultancy 9.1 → 10.1 (+11%) and debate 5.1 → 5.6 (+10%), against about +4% in v1. The largest shift is the distractor consultant in round 1 (10.4 → 12.8). Arguments shift, but modestly.
+- **Rule mentions:** both flagged v2 turns are false positives ("never been told", "has never been told he has any worth"), so 0 of 600 informed turns mention the rule. `mentions_rule`'s "been told" pattern is too broad; read flagged turns by hand rather than reporting the raw count.
+- **Gate 3 reading:** the bias now lowers consultancy accuracy beyond noise and shifts arguments in both protocols, so it looks like a pass. Debate shows no penalty. Two cautions: this pilot chose the wording, so its effect sizes shouldn't be quoted as results, and the v2 penalty mixes the stronger judge rule with the arguers' permission to use it; the design doesn't separate the two.

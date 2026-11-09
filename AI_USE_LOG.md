@@ -89,3 +89,7 @@ Entry format:
 ## 2026-11-09: Strengthen the bias wording after Gate 3 failed
 - **Claude:** Proposed strengthening both the judge rule and the arguer prompts, and wrote `judge_biased_v2`, `debater_informed_v2`, `consultant_informed_v2`, the config changes, tests, and the README section.
 - **Darrel:** Failed Gate 3 and chose to strengthen both prompts, including inviting arguers to use the rule.
+
+## 2026-11-09: Run the biased pilot with the v2 wording (Gate 3 retry)
+- **Claude:** Committed the v2 prompts and ran the approved 50-question biased pilot through the Batch API ($3.22). Compared it with the unbiased and v1 biased pilots, read the two arguments flagged as mentioning the rule (both false positives), and recorded the results in `tasks/todo.md`.
+- **Darrel:** Approved the commit and the paid run. Passed Gate 3.
