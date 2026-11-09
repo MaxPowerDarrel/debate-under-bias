@@ -388,3 +388,28 @@ Done when a run can go through the Message Batches API at half price, resumes af
 - **Estimates were high, as intended:** about $0.14 per Sonnet batch against about $0.06 actual, and $0.0144 for the judging batch against $0.0111 actual. The Haiku margin is the thinnest (30%), because Haiku judges averaged 833 output tokens here against the 1,200 assumed.
 - **Revised cost for the final run:** all six protocol conditions plus naive and expert come to about 24 Sonnet calls ($0.17) and 66 Haiku calls ($0.02), about **$0.19 per question**. That's about **$66 for 350 dev questions**, well under the $150 cap.
 - The biased pilot on the remaining 48 of Day 8's questions should cost about $4.30.
+
+## Day 11: Biased pilot (Gate 3, two days early)
+
+### Plan
+- [x] **Run (Darrel approved, Nov 9):** Day 8's 50 train questions, biased conditions, `--batch`, cap $8. Two questions were already cached from the batch check.
+- [x] Compare with Day 8's unbiased results: accuracy by protocol and side, penalties with story-bootstrap intervals, specifics per turn, and rule mentions.
+- [x] Darrel decides on Gate 3: **failed** (Nov 9). Strengthen both prompts once and repeat the pilot.
+
+### Review
+- `results/pilot/day12_biased_50/` (gitignored). 5 batches (192, 192, 191, 860, and 6 calls), with nothing resubmitted and nothing invalid. Cost **$3.94**, so pilot spend is **$29.98 of $50**. 0 forfeits, 0 retried turns, 0 ties, and 0 invalid votes.
+- The 5th batch held the 6 debate votes for one question (`23960_BH9IVT53_4`) that the 4th pass didn't collect. It cost one extra round trip, not money. Not yet explained; check before the final run.
+- **Accuracy, unbiased (Day 8) vs. biased:** consultancy 0.845 → 0.810, and debate 0.880 → 0.880. By consultant side: correct 0.94 → 0.96, and distractor 0.75 → 0.66.
+- **Penalties (5,000 story-bootstrap resamples, 50 stories):** consultancy 0.035 (−0.020 to 0.095), debate 0.000 (−0.060 to 0.050), and difference 0.035 (−0.045 to 0.120). Neither penalty is distinguishable from zero.
+- **Specifics per turn (names + numbers + dates):** consultancy 9.1 → 9.5 and debate 5.1 → 5.3. The largest shift is in round 1 (consultancy correct 11.2 → 12.1, distractor 10.4 → 11.8). Informed arguers barely changed their arguments.
+- **Rule mentions:** 0 of 600 informed turns (1 of 600 unbiased turns matched the pattern, so it's a false positive).
+- **Gate 3 reading:** the bias lowered consultancy accuracy slightly, through the distractor side as the hypothesis predicts, but neither effect clears noise, and arguments barely shifted. That looks like a fail. `PLAN.md` says to strengthen the rule's wording once and repeat the pilot, then use the fallback scope if it still fails.
+
+## Day 11b: Stronger bias wording (Gate 3 retry)
+
+### Plan
+- [x] `judge_biased_v2`: the rule plus heavy weight, a step to note specifics in each argument, and a line that scopes `judge_v2`'s wording line to the answers. Still judges each argument on its own, never comparing sides.
+- [x] `debater_informed_v2` and `consultant_informed_v2`: v1 plus permission to use the rule.
+- [x] Point both configs at v2, document v2 in `prompts/README.md`, and add tests (162 pass).
+- [ ] **Run (needs Darrel's approval):** the same 50 train questions, biased conditions, `--batch`, cap $8. About $4, which would take pilot spend to about $34 of $50.
+- [ ] Gate 3 again. If it still fails, switch to the fallback scope.

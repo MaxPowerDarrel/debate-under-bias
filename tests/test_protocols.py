@@ -307,6 +307,26 @@ def test_settings_load_from_config(name):
     assert settings.debate_words == 150 and settings.consultancy_words == 300 and settings.rounds == 3
     assert settings.debate_target_words == 100 and settings.consultancy_target_words == 200
     assert settings.debater_prompts == "debater_v2" and settings.consultant_prompts == "consultant_v2"
-    assert settings.debater_informed_prompts == "debater_informed_v1"
-    assert settings.consultant_informed_prompts == "consultant_informed_v1"
+    assert settings.debater_informed_prompts == "debater_informed_v2"
+    assert settings.consultant_informed_prompts == "consultant_informed_v2"
     assert settings.prompt_cache_ttl == "1h"
+
+
+SECTION_V2 = SECTION.replace(
+    "* Don't mention",
+    "* You can use this rule to your advantage. Include specific names, numbers, and dates from the story wherever "
+    "they support your answer.\n* Don't mention")
+
+
+@pytest.mark.parametrize("informed,plain", [("debater_informed_v2", "debater_v2"),
+                                            ("consultant_informed_v2", "consultant_v2")])
+def test_informed_v2_prompts_are_v2_plus_exactly_the_rule_section_with_permission_to_use_it(informed, plain):
+    from debate_bias.protocols import PROMPTS_DIR
+    files = sorted(p.name for p in (PROMPTS_DIR / informed).glob("*.md"))
+    assert files == sorted(p.name for p in (PROMPTS_DIR / plain).glob("*.md"))
+    for name in files:
+        a, b = (PROMPTS_DIR / informed / name).read_text(), (PROMPTS_DIR / plain / name).read_text()
+        if name == "system.md":
+            assert a.count(SECTION_V2) == 1 and a.replace(SECTION_V2, "") == b
+        else:
+            assert a == b

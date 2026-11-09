@@ -81,3 +81,11 @@ Entry format:
 ## 2026-11-08: Add the Batch API and prompt caching
 - **Claude:** Read the current Batch API and prompt-caching documentation. Designed and wrote batch mode as replay passes over the existing code: collect mode and `Pending` in `llm.py`, `batch.py` (submit, poll, collect, resume from `batches.json`, cost estimate before each batch), unit-level pausing in `protocols.py`, `judge.py`, and `run.py`, and `--batch`. Added batch and 1-hour cache-write pricing, story prompt caching (`prompt_cache_ttl: 1h` in both configs), and `tests/test_batch.py`. Ran the approved 2-question batch check ($0.18), confirmed 4 batches, cache reads, matching records, and a free replay, and checked the cost estimate against actual cost.
 - **Darrel:** Asked when the Batch API work made most sense, chose to build it after the bias prompts and before the biased pilot, and approved the paid check.
+
+## 2026-11-09: Run the biased pilot (Gate 3)
+- **Claude:** Committed the Batch API work. Ran the approved 50-question biased pilot through the Batch API ($3.94). Compared it with Day 8's unbiased pilot: accuracy by protocol and side, story-bootstrap intervals for the penalties, specifics per turn, and rule mentions. Recorded the results in `tasks/todo.md`.
+- **Darrel:** Approved the commit and the paid run. Gate 3 decision: not recorded yet.
+
+## 2026-11-09: Strengthen the bias wording after Gate 3 failed
+- **Claude:** Proposed strengthening both the judge rule and the arguer prompts, and wrote `judge_biased_v2`, `debater_informed_v2`, `consultant_informed_v2`, the config changes, tests, and the README section.
+- **Darrel:** Failed Gate 3 and chose to strengthen both prompts, including inviting arguers to use the rule.
