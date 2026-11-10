@@ -14,6 +14,13 @@ comes from the config's `prompts.judge` setting (`judge_v1` by default):
 `prompts.judge_biased` version. It is the unbiased debate or consultancy prompt plus one
 paragraph with the rule from `PLAN.md`. Naive and expert are always unbiased.
 
+**Biased judge, uninformed arguers:** `judge(..., biased_judge=True)` on an unbiased
+transcript judges it with the biased prompt even though its arguers never saw the rule.
+Comparing this cell with the unbiased one changes only the judge, and comparing it with the
+biased one changes only the arguers, so the bias penalty splits into a judge effect and an
+exploitation effect. A verdict's `biased` says which judge was used and `informed` says
+whether the arguers knew the rule. The unbiased judge never reads informed transcripts.
+
 **Order swap:** every condition is judged in both orders. In order 0 the correct answer
 is A, and in order 1 it is B. In debate, Debater A always argues answer A and is printed
 first in each round, so swapping the order also swaps which debater is A. The arguers
@@ -98,6 +105,7 @@ class Verdict:
     votes: list[Vote] = field(default_factory=list)
     forfeits: dict[str, str] = field(default_factory=dict)  # Side -> "refused" or "format_error"
     biased: bool = False  # Judged with the biased judge
+    informed: bool = False  # The arguers were told the judge's rule
 
     @property
     def tie(self) -> bool:
@@ -192,16 +200,27 @@ def judge(
     question: Question,
     order: int,
     transcript: Transcript | None = None,
+    biased_judge: bool | None = None,
 ) -> Verdict:
-    """Collect the votes for one condition and order. A forfeited transcript isn't judged."""
+    """Collect the votes for one condition and order. A forfeited transcript isn't judged.
+
+    `biased_judge` picks the judge. By default it follows the transcript: informed arguers
+    get the biased judge. Pass True to judge an uninformed transcript with the biased judge.
+    """
     forfeits = transcript.forfeits if transcript else {}
-    biased = bool(transcript and transcript.biased)
+    informed = bool(transcript and transcript.biased)
+    biased = informed if biased_judge is None else biased_judge
+    if biased and transcript is None:
+        raise ValueError(f"The {condition} judge is always unbiased")
+    if informed and not biased:
+        raise ValueError("Informed arguers are only judged by the biased judge")
     if biased and settings.biased_prompts is None:
         raise ValueError("A biased transcript needs prompts.judge_biased")
     version = settings.biased_prompts if biased else settings.prompts
     verdict = Verdict(condition, question.question_id, question.article_id, order,
                       transcript.consultant_side if transcript else None,
-                      "forfeit" if forfeits else "judged", version, forfeits=forfeits, biased=biased)
+                      "forfeit" if forfeits else "judged", version, forfeits=forfeits, biased=biased,
+                      informed=informed)
     if forfeits:
         return verdict
     answers = {"correct": question.correct, "distractor": question.distractor}
@@ -210,6 +229,7 @@ def judge(
                                 version)
     side_of = {letter: side for side, letter in letters(order).items()}
     who = f":{verdict.consultant_side}" if verdict.consultant_side else ""
+    cell = f"{condition}{'_biased' if biased else ''}{'_uninformed' if biased and not informed else ''}"
     pending = False
     for sample in range(settings.votes):
         try:
@@ -220,7 +240,7 @@ def judge(
                 max_tokens=settings.max_tokens,
                 effort=settings.effort,
                 sample=sample,
-                tag=f"judge:{condition}{'_biased' if biased else ''}{who}:{question.question_id}:o{order}",
+                tag=f"judge:{cell}{who}:{question.question_id}:o{order}",
             )
         except Pending:
             pending = True  # Still collect the other votes for the same batch

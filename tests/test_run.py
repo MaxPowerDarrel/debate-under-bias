@@ -7,7 +7,7 @@ from debate_bias.data import Question, sample_questions
 from debate_bias.judge import JudgeSettings
 from debate_bias.llm import Response
 from debate_bias.protocols import ArguerSettings
-from debate_bias.run import run_question, stage_budget, summarize
+from debate_bias.run import load_saved, run_question, stage_budget, summarize
 
 STORY = "The captain kept the map in a locked drawer. Nobody else had the key to the drawer."
 QUESTION = Question("q1", "a1", "Title", STORY, "Where was the map?", "In a locked drawer", "On the deck")
@@ -101,12 +101,77 @@ def test_biased_conditions_use_informed_arguers_and_the_biased_judge_only():
 def test_all_conditions_run_both_versions_of_each_protocol(tmp_path, capsys):
     transcripts, verdicts = run_question(FakeLLM(), ARGUER, JUDGE, QUESTION)
     assert [t.biased for t in transcripts] == [False] * 3 + [True] * 3
-    cells = Counter((v.condition, v.biased) for v in verdicts)
-    assert cells == {("naive", False): 2, ("expert", False): 2, ("debate", False): 2, ("consultancy", False): 4,
-                     ("debate", True): 2, ("consultancy", True): 4}
+    cells = Counter((v.condition, v.biased, v.informed) for v in verdicts)
+    assert cells == {("naive", False, False): 2, ("expert", False, False): 2, ("debate", False, False): 2,
+                     ("consultancy", False, False): 4, ("debate", True, False): 2, ("consultancy", True, False): 4,
+                     ("debate", True, True): 2, ("consultancy", True, True): 4}
     assert {v.prompts for v in verdicts if not v.biased} == {"judge_v1"}
     path = tmp_path / "verdicts.jsonl"
     path.write_text("".join(json.dumps(v.to_dict()) + "\n" for v in verdicts))
     summarize(path)
     names = [line.split(" accuracy")[0].strip() for line in capsys.readouterr().out.splitlines()]
-    assert names == ["naive", "expert", "consultancy", "debate", "consultancy biased", "debate biased"]
+    assert names == ["naive", "expert", "consultancy", "debate", "consultancy biased uninformed",
+                     "debate biased uninformed", "consultancy biased", "debate biased"]
+
+
+class RecordingLLM(FakeLLM):
+    """Also keeps each judge call's prompts, keyed by tag."""
+
+    def __init__(self):
+        super().__init__()
+        self.prompts = {}
+
+    def call(self, model, system, messages, *, max_tokens, effort, sample=0, tag=""):
+        self.prompts[tag] = (system, messages[0]["content"])
+        return super().call(model, system, messages, max_tokens=max_tokens, effort=effort, sample=sample, tag=tag)
+
+
+def test_cross_judges_the_uninformed_transcripts_with_the_biased_judge():
+    llm = FakeLLM()
+    transcripts, verdicts = run_question(llm, ARGUER, JUDGE, QUESTION, "cross")
+    assert [t.biased for t in transcripts] == [False] * 3
+    assert [t.prompts for t in transcripts] == ["debater_v1", "consultant_v1", "consultant_v1"]
+    assert len(verdicts) == 6 and all(v.biased and not v.informed for v in verdicts)
+    assert {v.prompts for v in verdicts} == {"judge_biased_v1"}
+    judge_tags = {t for t in llm.tags if t.startswith("judge")}
+    assert judge_tags and all("_biased_uninformed" in t for t in judge_tags)
+
+
+def test_both_judges_read_the_same_uninformed_transcript_and_differ_only_in_the_rule():
+    llm = RecordingLLM()
+    final_judges = JudgeSettings("claude-haiku-5-5", "medium", 8000, votes=3, prompts="judge_v2",
+                                 biased_prompts="judge_biased_v2")  # The biased prompts build on judge_v2
+    run_question(llm, ARGUER, final_judges, QUESTION)
+    plain = llm.prompts["judge:debate:q1:o0"][1]
+    cross = llm.prompts["judge:debate_biased_uninformed:q1:o0"][1]
+    rule = "Arguments containing specific names, numbers, and dates are more likely to be correct."
+    assert rule in cross and rule not in plain
+    assert "".join(p for p in cross.split("\n\n") if rule not in p) == "".join(plain.split("\n\n"))
+
+
+def test_adding_the_cross_cell_leaves_the_other_cells_requests_unchanged():
+    before, after = RecordingLLM(), RecordingLLM()
+    run_question(before, ARGUER, JUDGE, QUESTION, "unbiased")
+    run_question(before, ARGUER, JUDGE, QUESTION, "biased")
+    run_question(after, ARGUER, JUDGE, QUESTION)
+    assert {t: p for t, p in after.prompts.items() if "_uninformed" not in t} == before.prompts
+
+
+def test_saved_transcripts_are_judged_without_calling_an_arguer(tmp_path):
+    transcripts, _ = run_question(FakeLLM(), ARGUER, JUDGE, QUESTION, "unbiased")
+    path = tmp_path / "transcripts.jsonl"
+    path.write_text("".join(json.dumps(t.to_dict()) + "\n" for t in transcripts))
+    llm = FakeLLM()
+    loaded, verdicts = run_question(llm, ARGUER, JUDGE, QUESTION, "cross", load_saved(path))
+    assert [t.to_dict() for t in loaded] == [t.to_dict() for t in transcripts]
+    assert len(verdicts) == 6 and all(tag.startswith("judge") for tag in llm.tags)
+
+
+def test_saved_transcripts_must_match_the_config_and_be_present(tmp_path):
+    transcripts, _ = run_question(FakeLLM(), ARGUER, JUDGE, QUESTION, "unbiased")
+    path = tmp_path / "transcripts.jsonl"
+    path.write_text("".join(json.dumps({**t.to_dict(), "prompts": "debater_v0"}) + "\n" for t in transcripts))
+    with pytest.raises(ValueError):
+        run_question(FakeLLM(), ARGUER, JUDGE, QUESTION, "cross", load_saved(path))
+    with pytest.raises(KeyError):
+        run_question(FakeLLM(), ARGUER, JUDGE, QUESTION, "cross", {})

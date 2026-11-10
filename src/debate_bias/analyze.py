@@ -6,13 +6,15 @@
 `transcripts.jsonl`, so cells written by different runs (as in the pilot) can be analyzed
 together. Two runs holding the same verdict is an error. The analysis makes no API calls.
 
-**Cells.** There are six: naive, expert, and consultancy and debate with the unbiased and
-the biased judge. The four protocol cells are the 2×2 design.
+**Cells.** There are eight: naive, expert, and consultancy and debate in three versions.
+`consultancy` and `debate` have the unbiased judge and uninformed arguers. `*_biased` has
+the biased judge and informed arguers; with the first pair it forms the 2×2 design.
+`*_biased_uninformed` has the biased judge reading the unbiased cell's own transcripts.
 
 **Completeness.** Every question should have every cell in both orders, and consultancy
 on both sides. Missing verdicts are listed. The main analysis keeps only questions that
-are complete in all four protocol cells, so every comparison uses the same questions, and
-it reports how many were dropped.
+are complete in all six protocol cells, so every comparison uses the same questions and
+the two effects below add up exactly to the penalty. It reports how many were dropped.
 
 **Scores.** A question's score in a cell is the mean of its verdict scores: 2 verdicts for
 debate (one per order) and 4 for consultancy (two orders × two consultant sides). Naive and
@@ -31,6 +33,15 @@ of the resampled statistic. The seed is fixed, so the numbers are reproducible.
 - H2: the bias penalty for each protocol, unbiased − biased accuracy.
 - H3, the primary result: consultancy penalty − debate penalty. Positive means debate
   limited the damage.
+
+**Secondary: splitting the penalty.** The biased cell changes the judge and the arguers at
+once. `*_biased_uninformed` changes only the judge, so for each protocol:
+- Judge effect: unbiased − biased-uninformed accuracy. Both judges read the same
+  transcripts, so this shows what the rule does with no help from the arguers.
+- Exploitation effect: biased-uninformed − biased accuracy. Same judge, and the arguers
+  now know the rule.
+The two sum to the H2 penalty, and H3 splits the same way into a judge part and an
+exploitation part.
 
 **Forfeits.** The main numbers score a forfeit as a loss for the side that failed (see
 `judge.py`). The check recomputes everything with forfeited verdicts left out, so a
@@ -52,8 +63,9 @@ import numpy as np
 
 from .specifics import count_specifics, mentions_rule
 
-CELLS = (("naive", False), ("expert", False), ("consultancy", False), ("debate", False),
-         ("consultancy", True), ("debate", True))
+# (condition, biased judge, informed arguers)
+CELLS = (("naive", False, False), ("expert", False, False), ("consultancy", False, False), ("debate", False, False),
+         ("consultancy", True, False), ("debate", True, False), ("consultancy", True, True), ("debate", True, True))
 PROTOCOL_CELLS = CELLS[2:]
 ORDERS = (0, 1)
 CONSULTANT_SIDES = ("correct", "distractor")
@@ -61,8 +73,14 @@ RESAMPLES = 10_000
 SEED = 0
 
 
-def cell_name(condition: str, biased: bool) -> str:
-    return f"{condition}_biased" if biased else condition
+def cell_name(condition: str, biased: bool, informed: bool | None = None) -> str:
+    """`informed` defaults to `biased`, which is what records from before the field existed mean."""
+    informed = biased if informed is None else informed
+    return f"{condition}{'_biased' if biased else ''}{'_uninformed' if biased and not informed else ''}"
+
+
+def verdict_cell(v: dict) -> str:
+    return cell_name(v["condition"], v.get("biased", False), v.get("informed"))
 
 
 def expected_verdicts(condition: str) -> list[tuple[int, str | None]]:
@@ -84,7 +102,7 @@ def load_runs(run_dirs: list[Path]) -> tuple[list[dict], list[dict]]:
     for run in map(Path, run_dirs):
         for line in (run / "verdicts.jsonl").read_text().splitlines():
             v = json.loads(line)
-            key = (v["condition"], v.get("biased", False), v["question_id"], v["order"], v["consultant_side"])
+            key = (verdict_cell(v), v["question_id"], v["order"], v["consultant_side"])
             if key in seen_v:
                 raise DuplicateRecord(f"Verdict {key} is in both {seen_v[key]} and {run}")
             seen_v[key] = run
@@ -104,21 +122,21 @@ def missing_verdicts(verdicts: list[dict]) -> dict[str, list[str]]:
     """For each question, the verdicts it lacks, such as "debate_biased o1"."""
     have = defaultdict(set)
     for v in verdicts:
-        have[v["question_id"]].add((v["condition"], v.get("biased", False), v["order"], v["consultant_side"]))
+        have[v["question_id"]].add((verdict_cell(v), v["order"], v["consultant_side"]))
     missing = {}
     for qid in sorted(have):
-        gaps = [f"{cell_name(c, b)} o{order}{':' + side if side else ''}"
-                for c, b in CELLS for order, side in expected_verdicts(c)
-                if (c, b, order, side) not in have[qid]]
+        gaps = [f"{cell_name(*cell)} o{order}{':' + side if side else ''}"
+                for cell in CELLS for order, side in expected_verdicts(cell[0])
+                if (cell_name(*cell), order, side) not in have[qid]]
         if gaps:
             missing[qid] = gaps
     return missing
 
 
 def complete_questions(verdicts: list[dict]) -> set[str]:
-    """Questions with every verdict in all four protocol cells."""
+    """Questions with every verdict in all six protocol cells."""
     missing = missing_verdicts(verdicts)
-    protocol = {cell_name(c, b) for c, b in PROTOCOL_CELLS}
+    protocol = {cell_name(*cell) for cell in PROTOCOL_CELLS}
     return {v["question_id"] for v in verdicts
             if not any(gap.split()[0] in protocol for gap in missing.get(v["question_id"], []))}
 
@@ -139,7 +157,7 @@ def question_scores(verdicts: list[dict], questions: set[str], exclude_forfeits:
             continue
         if v["score"] is None:
             raise ValueError(f"Verdict without a score: {v['condition']} {v['question_id']} o{v['order']}")
-        name = cell_name(v["condition"], v.get("biased", False))
+        name = verdict_cell(v)
         scores[name][v["question_id"]].append(v["score"])
         if split_sides and v["consultant_side"]:
             scores[f"{name}:{v['consultant_side']}"][v["question_id"]].append(v["score"])
@@ -201,6 +219,15 @@ HYPOTHESES = {
     "H2: debate penalty": {"debate": 1, "debate_biased": -1},
     "H3: consultancy penalty - debate penalty": {"consultancy": 1, "consultancy_biased": -1,
                                                  "debate": -1, "debate_biased": 1},
+    # Secondary: each penalty split into the judge's part and the arguers' part.
+    "Judge effect: consultancy": {"consultancy": 1, "consultancy_biased_uninformed": -1},
+    "Judge effect: debate": {"debate": 1, "debate_biased_uninformed": -1},
+    "Exploitation effect: consultancy": {"consultancy_biased_uninformed": 1, "consultancy_biased": -1},
+    "Exploitation effect: debate": {"debate_biased_uninformed": 1, "debate_biased": -1},
+    "H3 from the judge effect": {"consultancy": 1, "consultancy_biased_uninformed": -1,
+                                 "debate": -1, "debate_biased_uninformed": 1},
+    "H3 from the exploitation effect": {"consultancy_biased_uninformed": 1, "consultancy_biased": -1,
+                                        "debate_biased_uninformed": -1, "debate_biased": 1},
 }
 
 
@@ -210,7 +237,7 @@ def accuracy_analysis(verdicts: list[dict], questions: set[str], story_of: dict[
     series = {cell: [(story_of[q], s) for q, s in by_q.items()] for cell, by_q in scores.items()}
     boot = Bootstrap(series, resamples, seed)
     accuracy = {cell: {**boot.mean(cell), "questions": len(scores[cell])} for cell in sorted(scores)}
-    protocol = {cell_name(c, b) for c, b in PROTOCOL_CELLS}
+    protocol = {cell_name(*cell) for cell in PROTOCOL_CELLS}
     hypotheses = {name: boot.combine(w) for name, w in HYPOTHESES.items() if protocol <= set(scores)}
     return {"accuracy": accuracy, "hypotheses": hypotheses}
 
@@ -220,7 +247,7 @@ def counts(verdicts: list[dict], questions: set[str]) -> dict[str, dict]:
     for v in verdicts:
         if v["question_id"] not in questions:
             continue
-        c = out[cell_name(v["condition"], v.get("biased", False))]
+        c = out[verdict_cell(v)]
         c["verdicts"] += 1
         c["forfeits"] += v["status"] == "forfeit"
         c["ties"] += bool(v.get("tie"))

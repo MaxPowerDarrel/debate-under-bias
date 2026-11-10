@@ -40,6 +40,7 @@ Pilot and tune on the train split only. Run the locked experiment once on the de
 | Debate, unbiased | Two AIs arguing opposite answers | Replicates the known debate advantage |
 | Consultancy, biased | Same format, with biased judge and informed consultant | Measures damage without an opponent |
 | Debate, biased | Same format, with biased judge and informed debaters | Measures damage with an opponent |
+| Consultancy and debate, biased judge with uninformed arguers (added November 10) | The unbiased conditions' own transcripts, read by the biased judge | Secondary: splits each bias penalty into the judge's part and the arguers' part |
 
 ### Protocol settings
 

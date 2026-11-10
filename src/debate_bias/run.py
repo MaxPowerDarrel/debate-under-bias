@@ -3,7 +3,8 @@
 For each question, `run_question` makes the debate and both consultancy transcripts, then
 judges every condition in both answer orders. `--conditions` picks which conditions run:
 `unbiased` (naive, expert, and both protocols with the unbiased judge), `biased` (both
-protocols with informed arguers and the biased judge), or `all` (the default). It writes two files under
+protocols with informed arguers and the biased judge), `cross` (the uninformed transcripts
+judged by the biased judge, see `judge.py`), or `all` (the default). It writes two files under
 `results/<stage>/<run>/`, where `<stage>` is the config name (`pilot` or `final`):
 
 - `transcripts.jsonl`: one line per debate or consultancy transcript.
@@ -18,6 +19,13 @@ files are rewritten from the start on each run.
 output files in a final pass once every call is cached. Batch IDs are saved in
 `batches.json` in the run folder, so a restarted run collects them instead of paying
 again.
+
+**Saved transcripts:** `--transcripts-from <run>` loads the transcripts another run in the
+same stage saved, instead of calling the arguers, and judges that run's questions. A new
+judge then reads exactly the transcripts the earlier judge read, even if the arguer
+requests have changed since (the first unbiased pilot ran before prompt caching, so its
+requests no longer match the response cache). Loaded transcripts aren't written again, so
+the two runs can be merged in `analyze.py` without duplicates.
 
 **Spending:** the config's cap covers the whole stage, so the cap check counts spend from
 every run's `calls.jsonl` under `results/<stage>/`, not just this run's. `--cap` can set a
@@ -42,18 +50,37 @@ ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "results"
 
 
-CONDITION_SETS = {"unbiased": (False,), "biased": (True,), "all": (False, True)}
+# Each choice lists its cells as (arguers informed, judge biased).
+CONDITION_SETS = {
+    "unbiased": ((False, False),),
+    "biased": ((True, True),),
+    "cross": ((False, True),),
+    "all": ((False, False), (False, True), (True, True)),
+}
+Saved = dict[tuple, Transcript]  # (question ID, protocol, consultant side, informed) -> transcript
+
+
+def load_saved(path: Path) -> Saved:
+    """Read a run's `transcripts.jsonl` for `--transcripts-from`."""
+    saved = {}
+    for line in path.read_text().splitlines():
+        t = Transcript.from_dict(json.loads(line))
+        saved[t.question_id, t.protocol, t.consultant_side, t.biased] = t
+    return saved
 
 
 def run_question(
     llm: LLM, arguer: ArguerSettings, judge_settings: JudgeSettings, question: Question,
-    conditions: str = "all",
+    conditions: str = "all", saved: Saved | None = None,
 ) -> tuple[list[Transcript], list[Verdict]]:
     """Make every transcript for one question, then judge every condition in both orders.
 
     Each transcript and each verdict is a separate unit. In batch mode a unit whose next
     call isn't cached raises `Pending`. The other units still run, so one pass collects
     every call that is ready, and the question raises `Pending` at the end.
+
+    With `saved`, transcripts come from an earlier run's file and no arguer is called. A
+    saved transcript made with a different prompt version from the config's is an error.
     """
     pending = False
 
@@ -65,20 +92,35 @@ def run_question(
             pending = True
             return None
 
+    def load(protocol: str, side: str | None, informed: bool) -> Transcript:
+        key = (question.question_id, protocol, side, informed)
+        if key not in saved:
+            raise KeyError(f"No saved transcript for {key}")
+        wanted = arguer.prompts_for(protocol, informed)
+        if saved[key].prompts != wanted:
+            raise ValueError(f"Saved transcript {key} used {saved[key].prompts}, but the config says {wanted}")
+        return saved[key]
+
+    cells = CONDITION_SETS[conditions]
     transcripts = []
-    for biased in CONDITION_SETS[conditions]:
-        transcripts.append(attempt(lambda: run_debate(llm, arguer, question, biased)))
+    for informed in dict.fromkeys(informed for informed, _ in cells):  # Each kind of transcript once, in order
+        if saved is not None:
+            transcripts += [load("debate", None, informed)] + [load("consultancy", s, informed) for s in SIDES]
+            continue
+        transcripts.append(attempt(lambda: run_debate(llm, arguer, question, informed)))
         for side in SIDES:
-            transcripts.append(attempt(lambda: run_consultancy(llm, arguer, question, side, biased)))
+            transcripts.append(attempt(lambda: run_consultancy(llm, arguer, question, side, informed)))
     verdicts = []
     for order in ORDERS:
-        if conditions != "biased":
+        if (False, False) in cells:
             verdicts.append(attempt(lambda: judge(llm, judge_settings, "naive", question, order)))
             verdicts.append(attempt(lambda: judge(llm, judge_settings, "expert", question, order)))
-        for transcript in transcripts:
-            if transcript is not None:  # A pending transcript can't be judged yet
-                verdicts.append(attempt(lambda: judge(llm, judge_settings, transcript.protocol, question,
-                                                      order, transcript)))
+        for informed, biased_judge in cells:
+            for transcript in transcripts:
+                # A pending transcript (None) can't be judged yet
+                if transcript is not None and transcript.biased == informed:
+                    verdicts.append(attempt(lambda: judge(llm, judge_settings, transcript.protocol, question,
+                                                          order, transcript, biased_judge)))
     if pending:
         raise Pending(question.question_id)
     return transcripts, verdicts
@@ -101,6 +143,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--conditions", choices=sorted(CONDITION_SETS), default="all")
     parser.add_argument("--questions", help="Comma-separated question IDs to run instead of a sample")
     parser.add_argument("--batch", action="store_true", help="Send calls through the Message Batches API")
+    parser.add_argument("--transcripts-from", help="Judge the transcripts saved by this run instead of calling arguers")
     args = parser.parse_args(argv)
 
     config = yaml.safe_load(args.config.read_text())
@@ -120,6 +163,9 @@ def main(argv: list[str] | None = None) -> None:
     judge_settings = JudgeSettings.from_config(config)
 
     questions, _ = load_questions(config["split"])
+    saved = load_saved(stage_dir / args.transcripts_from / "transcripts.jsonl") if args.transcripts_from else None
+    if saved is not None and not args.questions:  # Judge exactly the questions that run saved
+        args.questions = ",".join(dict.fromkeys(key[0] for key in saved))
     if args.questions:
         by_id = {q.question_id: q for q in questions}
         wanted = args.questions.split(",")
@@ -134,8 +180,8 @@ def main(argv: list[str] | None = None) -> None:
     def write_all() -> None:
         with (out / "transcripts.jsonl").open("w") as t_file, (out / "verdicts.jsonl").open("w") as v_file:
             for i, question in enumerate(questions, start=1):
-                transcripts, verdicts = run_question(llm, arguer, judge_settings, question, args.conditions)
-                for t in transcripts:
+                transcripts, verdicts = run_question(llm, arguer, judge_settings, question, args.conditions, saved)
+                for t in [] if saved is not None else transcripts:  # Loaded transcripts are already on file
                     t_file.write(json.dumps(t.to_dict()) + "\n")
                 for v in verdicts:
                     v_file.write(json.dumps(v.to_dict()) + "\n")
@@ -151,7 +197,7 @@ def main(argv: list[str] | None = None) -> None:
             waiting = 0
             for question in questions:
                 try:
-                    run_question(llm, arguer, judge_settings, question, args.conditions)
+                    run_question(llm, arguer, judge_settings, question, args.conditions, saved)
                 except Pending:
                     waiting += 1
             print(f"Pass: {waiting} questions waiting on {len(llm.pending)} calls, spent ${budget.spent_usd:.2f}",
@@ -171,17 +217,19 @@ def summarize(verdicts_path: Path) -> None:
     """
     records = [json.loads(line) for line in verdicts_path.read_text().splitlines()]
     mean = lambda rows: sum(r["score"] for r in rows) / len(rows) if rows else float("nan")
-    cells = [("naive", False), ("expert", False), ("consultancy", False), ("debate", False),
-             ("consultancy", True), ("debate", True)]
-    for condition, biased in cells:
-        rows = [r for r in records if r["condition"] == condition and r.get("biased", False) == biased]
+    cells = [("naive", False, False), ("expert", False, False), ("consultancy", False, False),
+             ("debate", False, False), ("consultancy", True, False), ("debate", True, False),
+             ("consultancy", True, True), ("debate", True, True)]  # (condition, biased judge, informed arguers)
+    for condition, biased, informed in cells:
+        rows = [r for r in records if r["condition"] == condition and r.get("biased", False) == biased
+                and r.get("informed", r.get("biased", False)) == informed]
         if not rows:
             continue
-        name = f"{condition}{' biased' if biased else ''}"
+        name = f"{condition}{' biased' if biased else ''}{' uninformed' if biased and not informed else ''}"
         judged = [r for r in rows if r["status"] == "judged"]
         invalid = sum(v["letter"] is None for r in judged for v in r["votes"])
         votes = sum(len(r["votes"]) for r in judged)
-        print(f"{name:18} accuracy {mean(rows):.3f} ({mean(judged):.3f} without forfeits)  "
+        print(f"{name:30} accuracy {mean(rows):.3f} ({mean(judged):.3f} without forfeits)  "
               f"over {len(rows)} orders, {len(rows) - len(judged)} forfeits, "
               f"{sum(r['tie'] for r in judged)} ties, {invalid}/{votes} invalid votes")
 

@@ -455,3 +455,64 @@ Done when a run can go through the Message Batches API at half price, resumes af
 - **Correction:** the Day 11 review said 0 retried turns. My check counted turns with more than one failed attempt, but `Turn.attempts` holds only failed attempts, so one is enough. A correct count gives 1 retried turn (this one) in the first biased run and 0 in the unbiased and v2 biased runs.
 - **`mentions_rule`:** "been told" now counts only with the judge, "you", or "I" as the subject, and "instructed" and "guidelines" are added. The pilots had 3 flags, all story narration ("had never been told he mattered", "he had been told the job was important"); now there are 0. New tests cover both false positives and three true mentions. `uv run pytest`: 176 passed.
 - **Hand check for missed mentions:** I searched both biased runs for "judge", "rule", "instruct", and "more likely to be correct". Almost every hit is "A skeptical judge may ask", which echoes the consultant prompt's own step. The other 73 are story content: characters who judge things, story rules, and orders given in the plot. No informed argument mentions the bias rule.
+
+## Biased judge with uninformed arguers (planned and built Nov 10; Darrel approved the build and the pilot run)
+
+From the Nov 10 adversarial review. The unbiased and biased cells differ in two things at once: the judge prompt and the arguer prompt. This cell changes only the judge, so the penalty splits into two parts.
+
+### Design
+- **The cell:** judge the *same* uninformed transcripts the unbiased cells use, with `judge_biased_v2`. No new arguer calls and no new prompts.
+- **Decomposition, per protocol:**
+  - Judge effect = unbiased accuracy − (biased judge, uninformed arguers).
+  - Exploitation effect = (biased judge, uninformed arguers) − (biased judge, informed arguers).
+  - The two add up to the existing bias penalty, so H2 and H3 are unchanged.
+- **Pairing:** the judge effect compares two judges on identical transcripts, so it carries no transcript-sampling noise. The exploitation effect compares different transcripts, as the penalty does now.
+- **Status in the preregistration:** secondary. The primary result stays H3 on the four protocol cells. ⚑ Darrel decides whether to also split H3 into its judge and exploitation parts as a named secondary estimate.
+
+### Code plan
+- [x] `judge.py`: `judge()` takes `biased_judge`, defaulting to `transcript.biased`. `Verdict` gains `informed` (the arguers knew the rule); `biased` keeps meaning "judged by the biased judge". The tag gets an `_uninformed` suffix. Existing cells build the same requests, so their cache keys don't change.
+- [x] `run.py`: `run_question` judges each uninformed transcript a second time with the biased judge when the conditions include it. `all` includes it; a new `cross` choice runs only this cell. New `--transcripts-from <run>` loads saved transcripts instead of calling the arguers.
+- [x] `analyze.py`: two new cells, `consultancy_biased_uninformed` and `debate_biased_uninformed`; verdict keys include `informed` (old records default to `informed = biased`); four new estimates (judge and exploitation effect per protocol); completeness and the missing-verdict list cover the new cells. ⚑ The main analysis keeps a question only if all six protocol cells are complete, so the parts sum exactly.
+- [x] Tests: the cross verdict uses the biased prompt on an uninformed transcript; no arguer call is made with `--transcripts-from`; old cache keys are unchanged; the two effects sum to the penalty; old pilot records still load.
+- [x] Docs: `prompts/README.md` unchanged (no new prompts); add the cell to `PLAN.md`'s condition table and the preregistration skeleton's comments; `AI_USE_LOG.md` entry.
+
+### Why `--transcripts-from`
+The unbiased pilot (`day10_unbiased_50`) ran before prompt caching was added, so its arguer requests hash differently from today's config. Rerunning through the normal path would miss the cache, pay Sonnet for 600 new turns, and judge *different* transcripts from the ones the unbiased cell used. Loading the saved transcripts keeps the pairing and guarantees no Sonnet calls.
+
+### Cost (from the pilot's own call logs)
+- Per question: 18 Haiku calls (debate 2 orders × 3 votes, consultancy 2 sides × 2 orders × 3 votes), about 2,100 input and 820 output tokens each. Measured: $0.00031 per call in a batch, $0.00059 synchronous.
+- **Pilot, 50 train questions:** 900 calls, about **$0.28** by batch ($0.53 synchronous). Run with `--cap 1`. Pilot spend so far is $33.20 of the $50 cap.
+- **Final run, 350 dev questions:** 6,300 more calls, about **$2**, taking the estimate from about $66 to about $68 of the $150 cap.
+
+### Pilot command (after approval)
+    uv run python -m debate_bias.run --config configs/pilot.yaml --run day14_biased_judge_uninformed_50 \
+        --conditions cross --transcripts-from day10_unbiased_50 --batch --cap 1
+
+### What the pilot result means for the design
+- **Mostly judge effect** (what the review predicts): H3 holds without arguers knowing anything. The honest claim becomes "an unopposed arguer is exposed to a credulous judge and an opposed one isn't", and the informed-arguer framing needs softening before the lock.
+- **Sizeable exploitation effect:** the original framing stands, with the split reported.
+- Either way the pilot informs wording only; like the other pilots, its numbers aren't results.
+
+### Review
+- `uv run pytest`: 184 passed (8 new). New tests check that the cross cell uses the biased prompt on uninformed transcripts, that both judges read the same transcript and their prompts differ only in the rule paragraph, that the other cells' requests are unchanged, that `--transcripts-from` calls no arguer and rejects a mismatched prompt version, that old records still load, and that the two effects sum to the penalty.
+- The two ⚑ items went ahead as planned without a separate decision from Darrel: the main analysis now needs all six protocol cells, and H3's two parts are reported. Both are open to change before the lock.
+- **Pilot run** `day14_biased_judge_uninformed_50`: 900 Haiku calls in one batch, $0.283, no Sonnet calls, 0 forfeits, 0 ties, 0 invalid votes. Pilot spend is now $33.48 of $50.
+- **Pilot result** (`results/pilot/analysis_pilot_v3/`, 50 train questions from 50 stories, 10,000 story resamples):
+
+| Cell | Unbiased | Biased judge, uninformed | Biased judge, informed |
+| --- | --- | --- | --- |
+| Consultancy | 0.845 | 0.815 | 0.775 |
+| Consultancy, correct side | 0.940 | 0.960 | 0.940 |
+| Consultancy, distractor side | 0.750 | 0.670 | 0.610 |
+| Debate | 0.880 | 0.890 | 0.890 |
+
+| Estimate | Value (95% interval) |
+| --- | --- |
+| Judge effect: consultancy | 0.030 (−0.005 to 0.065) |
+| Exploitation effect: consultancy | 0.040 (−0.010 to 0.090) |
+| Judge effect: debate | −0.010 (−0.040 to 0.020) |
+| Exploitation effect: debate | 0.000 (−0.060 to 0.060) |
+| H3 from the judge effect | 0.040 (−0.010 to 0.090) |
+| H3 from the exploitation effect | 0.040 (−0.040 to 0.120) |
+
+- **Reading:** the review predicted the penalty would be mostly judge effect. The pilot doesn't show that. The split is about even, 3 points from the judge and 4 from informed arguers in consultancy, and neither part is distinguishable from zero at 50 questions. Both parts act on the distractor side. So the judge prompt alone does part of the damage, as the review argued, but the pilot gives no grounds to drop the informed-arguer framing. Like the other pilots, these numbers inform the design and aren't results.

@@ -101,3 +101,15 @@ Entry format:
 ## 2026-11-09: Explain the extra batch and narrow the rule-mention check
 - **Claude:** Traced the first biased run's 5th batch to one retried debater turn (a reply that closed with the wrong tag), and corrected the earlier count of retried turns, which my own check had gotten wrong. Narrowed `mentions_rule`, added tests, and searched both biased pilots by hand for any mention of the rule (none).
 - **Darrel:** Asked for both follow-ups.
+
+## 2026-11-09: Outline the preregistration
+- **Claude:** Proposed an outline and saved it as a skeleton in `PREREGISTRATION.md`, keeping the scaffold draft's text unchanged under the new headings and adding comments on what each section needs, decisions still open (⚑), and two scaffold lines that are out of date (the data filters and the distractor field).
+- **Darrel:** Asked for the outline and the skeleton. He writes the draft.
+
+## 2026-11-10: Adversarial review of the experiment before the lock
+- **Claude:** Read the code, prompts, configs, plan, and preregistration skeleton, and probed the two 50-question pilot runs offline (no API calls, no dev data beyond the existing question counts). Reported design, analysis, and code weaknesses in the session, with the main one being that the biased-judge effect and the informed-arguer effect aren't separated. Changed no code, prompts, or analysis.
+- **Darrel:** Asked for the review. Decisions on the findings: not recorded.
+
+## 2026-11-10: Add the biased-judge, uninformed-arguer cell and pilot it
+- **Claude:** Planned the cell and its cost in `tasks/todo.md`. Changed `judge.py`, `run.py` (new `cross` condition and `--transcripts-from`), and `analyze.py` (two new cells, judge and exploitation effects, six-cell completeness), added 8 tests, and added the cell to `PLAN.md`'s condition table and the preregistration skeleton's comments. Ran the 50-question pilot (900 Haiku calls, $0.28) and the merged analysis. Chose the six-cell completeness rule and the H3 split without a separate decision from Darrel.
+- **Darrel:** Asked for the plan and cost, then approved the build and the pilot run. Review of the code and result: not recorded.

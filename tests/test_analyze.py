@@ -3,12 +3,13 @@ import json
 import numpy as np
 import pytest
 
-from debate_bias.analyze import (CELLS, Bootstrap, DuplicateRecord, analyze, complete_questions, expected_verdicts,
+from debate_bias.analyze import (CELLS, cell_name, Bootstrap, DuplicateRecord, analyze, complete_questions, expected_verdicts,
                                  load_runs, missing_verdicts, plot, question_scores, to_markdown)
 
 
-def verdict(qid, story, condition, biased, order, side=None, score=1.0, status="judged"):
-    return {"condition": condition, "biased": biased, "question_id": qid, "article_id": story, "order": order,
+def verdict(qid, story, condition, biased, order, side=None, score=1.0, status="judged", informed=None):
+    return {"condition": condition, "biased": biased, "informed": biased if informed is None else informed,
+            "question_id": qid, "article_id": story, "order": order,
             "consultant_side": side, "status": status, "score": score, "tie": score == 0.5,
             "votes": [{"letter": "A"}, {"letter": None}, {"letter": "B"}]}
 
@@ -17,10 +18,10 @@ def full_question(qid, story, scores=None):
     """Every verdict for one question. `scores` maps a cell name to its score (default 1)."""
     scores = scores or {}
     out = []
-    for condition, biased in CELLS:
-        name = f"{condition}_biased" if biased else condition
+    for condition, biased, informed in CELLS:
+        name = cell_name(condition, biased, informed)
         for order, side in expected_verdicts(condition):
-            out.append(verdict(qid, story, condition, biased, order, side, scores.get(name, 1.0)))
+            out.append(verdict(qid, story, condition, biased, order, side, scores.get(name, 1.0), informed=informed))
     return out
 
 
@@ -39,7 +40,7 @@ def test_each_cell_needs_both_orders_and_consultancy_needs_both_sides():
 
 def test_missing_verdicts_are_listed_and_incomplete_questions_dropped():
     verdicts = full_question("q1", "s1") + [v for v in full_question("q2", "s1")
-                                            if not (v["condition"] == "debate" and v["biased"] and v["order"] == 1)]
+                                            if not (v["condition"] == "debate" and v["informed"] and v["order"] == 1)]
     verdicts += [v for v in full_question("q3", "s2") if v["condition"] != "naive"]
     assert missing_verdicts(verdicts) == {"q2": ["debate_biased o1"], "q3": ["naive o0", "naive o1"]}
     assert complete_questions(verdicts) == {"q1", "q3"}  # A missing baseline doesn't drop a question
@@ -157,3 +158,37 @@ def test_markdown_and_figure_are_written(tmp_path):
     assert "H3: consultancy penalty - debate penalty" in markdown and "2 questions from 2 stories" in markdown
     plot(results, tmp_path / "out" / "accuracy.png")
     assert (tmp_path / "out" / "accuracy.png").stat().st_size > 0
+
+
+# Biased judge with uninformed arguers
+
+
+def test_records_without_an_informed_field_mean_informed_equals_biased(tmp_path):
+    old = [{k: x for k, x in v.items() if k != "informed"} for v in full_question("q1", "s1")
+           if v["biased"] == v["informed"]]
+    cross = [v for v in full_question("q1", "s1") if v["biased"] and not v["informed"]]
+    write_run(tmp_path / "old", old)
+    write_run(tmp_path / "cross", cross)
+    merged, _ = load_runs([tmp_path / "old", tmp_path / "cross"])
+    assert not missing_verdicts(merged) and complete_questions(merged) == {"q1"}
+
+
+def test_a_question_without_the_uninformed_cell_is_dropped():
+    verdicts = [v for v in full_question("q1", "s1") if v["biased"] == v["informed"]]
+    assert complete_questions(verdicts) == set()
+    assert "debate_biased_uninformed o0" in missing_verdicts(verdicts)["q1"]
+
+
+def test_judge_and_exploitation_effects_sum_to_the_penalty(tmp_path):
+    scores = {"consultancy": 1.0, "consultancy_biased_uninformed": 0.75, "consultancy_biased": 0.5,
+              "debate": 1.0, "debate_biased_uninformed": 1.0, "debate_biased": 0.75}
+    write_run(tmp_path / "run", full_question("q1", "s1", scores) + full_question("q2", "s2"))
+    h = analyze([tmp_path / "run"], resamples=200)["main"]["hypotheses"]
+    est = lambda name: h[name]["estimate"]
+    assert est("Judge effect: consultancy") == pytest.approx(0.125)
+    assert est("Exploitation effect: consultancy") == pytest.approx(0.125)
+    for protocol in ("consultancy", "debate"):
+        assert est(f"Judge effect: {protocol}") + est(f"Exploitation effect: {protocol}") == pytest.approx(
+            est(f"H2: {protocol} penalty"))
+    assert est("H3 from the judge effect") + est("H3 from the exploitation effect") == pytest.approx(
+        est("H3: consultancy penalty - debate penalty"))
