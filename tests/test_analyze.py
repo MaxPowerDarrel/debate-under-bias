@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from debate_bias.analyze import (CELLS, cell_name, Bootstrap, DuplicateRecord, analyze, complete_questions, expected_verdicts,
-                                 load_runs, missing_verdicts, plot, question_scores, to_markdown)
+                                 load_runs, missing_verdicts, plot, question_scores, to_markdown, unanimous, vote_agreement)
 
 
 def verdict(qid, story, condition, biased, order, side=None, score=1.0, status="judged", informed=None):
@@ -156,8 +156,33 @@ def test_markdown_and_figure_are_written(tmp_path):
     results = analyze([tmp_path / "run"], resamples=100)
     markdown = to_markdown(results)
     assert "H3: consultancy penalty - debate penalty" in markdown and "2 questions from 2 stories" in markdown
+    assert "## Vote agreement" in markdown and results["vote_agreement"]["debate"]["estimate"] == 0  # Helper votes never agree
     plot(results, tmp_path / "out" / "accuracy.png")
     assert (tmp_path / "out" / "accuracy.png").stat().st_size > 0
+
+
+# Vote agreement
+
+
+def test_votes_are_unanimous_only_when_all_are_valid_and_equal():
+    votes = lambda *letters: {"votes": [{"letter": letter} for letter in letters]}
+    assert unanimous(votes("A", "A", "A"))
+    assert not unanimous(votes("A", "A", "B"))
+    assert not unanimous(votes("A", "A", None))  # An invalid vote breaks agreement
+    assert not unanimous(votes())
+
+
+def test_vote_agreement_is_the_unanimous_share_of_judged_verdicts():
+    agree = [{"letter": "B"}] * 3
+    verdicts = [{**verdict("q1", "s1", "debate", False, 0), "votes": agree},
+                {**verdict("q1", "s1", "debate", False, 1), "votes": agree},
+                {**verdict("q2", "s2", "debate", False, 0), "votes": agree},
+                verdict("q2", "s2", "debate", False, 1),  # The helper's votes are A, invalid, B
+                {**verdict("q3", "s3", "debate", False, 0, status="forfeit"), "votes": []},  # Left out
+                {**verdict("q4", "s4", "debate", False, 0), "votes": agree}]  # Not an analyzed question
+    result = vote_agreement(verdicts, {"q1", "q2", "q3"}, resamples=200)
+    assert result["debate"]["estimate"] == pytest.approx(0.75) and result["debate"]["verdicts"] == 4
+    assert 0.5 <= result["debate"]["low"] <= 0.75 <= result["debate"]["high"] <= 1.0
 
 
 # Biased judge with uninformed arguers

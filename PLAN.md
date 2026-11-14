@@ -1,6 +1,6 @@
 # Debate Under Biased Oversight: Project Plan
 
-Last updated November 3, 2026.
+Last updated November 13, 2026.
 
 ## Overview
 
@@ -13,7 +13,7 @@ By Saturday, November 21, finish a small public experiment testing whether debat
 **Hypotheses to lock before the full run**
 
 1. **Baseline:** With an unbiased judge, debate is more accurate than consultancy. Prior work points this way, so this also checks the harness.
-2. **Bias works:** Knowing the judge's flaw lowers accuracy in both protocols.
+2. **Bias works:** In both protocols, a biased judge with informed arguers is less accurate than an unbiased judge with uninformed arguers. (Reworded November 13. The earlier wording, "Knowing the judge's flaw lowers accuracy in both protocols", credited the whole penalty to the arguers' knowledge.)
 3. **Main test:** The accuracy lost to bias is smaller in debate than in consultancy. Both debaters can exploit the flaw, which may cancel out. A lone consultant arguing the wrong answer has no opponent.
 
 **Finished means:** a reproducible public repo, a short write-up with confidence intervals, and a clear statement of what the result does and doesn't show. A null or negative result still counts if the method holds up.
@@ -67,6 +67,8 @@ Don't use a rule that compares the two sides, such as "favor the answer with mor
 As a single bootstrapping step, treat the biased judge's consultancy verdicts as R and its debate verdicts as R′. Then compare each with the gold labels.
 
 **Expected precision:** A simulation of 300 questions, using assumed accuracy rates and treating questions as independent, gave a margin of about ±7 points. It showed roughly 76–77% power for a true 10-point difference and over 99% for 20 points. Grouping by story will widen the interval, so treat a difference under 10 points as inconclusive.
+
+**Revised November 13:** A simulation from the pilot's own per-question scores, with the cells kept paired (`scripts/precision_from_pilot.py`), gives about ±3 to ±4 points on the primary result for 350 questions from 83 stories. The 10-point bar is therefore no longer a support threshold. Each hypothesis is supported if its 95% interval is above zero, contradicted if it is below zero, and inconclusive otherwise. A supported effect under 10 points is reported as small, and the verdict under the original 10-point rule is reported too. `PREREGISTRATION.md` holds the full rule.
 
 ## Repo structure
 

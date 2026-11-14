@@ -516,3 +516,20 @@ The unbiased pilot (`day10_unbiased_50`) ran before prompt caching was added, so
 | H3 from the exploitation effect | 0.040 (−0.040 to 0.120) |
 
 - **Reading:** the review predicted the penalty would be mostly judge effect. The pilot doesn't show that. The split is about even, 3 points from the judge and 4 from informed arguers in consultancy, and neither part is distinguishable from zero at 50 questions. Both parts act on the distractor side. So the judge prompt alone does part of the damage, as the review argued, but the pilot gives no grounds to drop the informed-arguer framing. Like the other pilots, these numbers inform the design and aren't results.
+
+## Pilot read against the hypotheses (Nov 13, exploratory)
+
+Train split, 50 questions from 50 stories, `analysis_pilot_v3` (rerun Nov 13; it reproduces exactly). These numbers inform the design and aren't results. Per-question counts come from a scratch script built on `analyze.question_scores`, not from committed code.
+
+| Hypothesis | Estimate (95% story-bootstrap CI) | Questions better / worse / same | Pilot reading |
+| --- | --- | --- | --- |
+| H1: debate beats consultancy, unbiased | +0.035 (−0.020 to 0.090) | 10 / 3 / 37 (sign test p = 0.09) | Right direction, not shown |
+| H2: bias hurts consultancy | 0.070 (0.025 to 0.120) | 13 / 3 / 34 (p = 0.02) | Supported |
+| H2: bias hurts debate | −0.010 (−0.060 to 0.040) | 2 / 2 / 46 (p = 1.0) | Not supported: no penalty |
+| H3: consultancy penalty − debate penalty | 0.080 (0.010 to 0.155) | 14 positive / 5 negative / 31 zero | Right direction, but under `PLAN.md`'s 10-point bar for "inconclusive" |
+
+- **Where the consultancy penalty comes from:** entirely the distractor-side consultant (0.75 → 0.67 with the biased judge alone → 0.61 with informed arguers). The correct side stays at 0.94 to 0.96. The total is spread over 16 questions, and no single question dominates (the top 3 give 1.5 of the 3.5 summed points).
+- **Debate doesn't even feel the judge rule:** the debate judge effect is −0.01 on identical transcripts, so debate isn't only cancelling informed exploitation. The opponent seems to protect against the credulous judge itself.
+- **Judge certainty:** 3-of-3 vote agreement in consultancy falls from 0.91 unbiased to 0.83 in both biased consultancy cells. In debate it stays at 0.93 to 0.97.
+- **Why H1 is weak here:** consultancy is already 0.845 (Khan et al. report 54%), with expert at 0.93, which leaves debate about 8 points of room. 33 of 50 questions score 1.0 in unbiased consultancy.
+- **Cautions for the write-up:** the v2 bias wording was picked after the v1 failure on these same 50 questions, so the H2 and H3 sizes are probably optimistic. Naive is 0.62, so the judge gets some signal without any argument. Debate order effect is small (0.86 vs 0.90).

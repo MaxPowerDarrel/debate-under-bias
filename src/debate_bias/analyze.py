@@ -52,6 +52,12 @@ that cell.
 (biased) minus uninformed arguers, with the same story bootstrap. Turns that
 `mentions_rule` flags are listed for reading by hand, because the pattern also matches
 ordinary phrases like "never been told".
+
+**Vote agreement.** A diagnostic, not a test: the share of judged verdicts in each cell
+where every vote is valid and all pick the same answer (3 of 3 in the final run). A
+forfeited verdict has no votes, so it is left out. Lower agreement means the judge is
+less sure of its verdicts. Intervals use the same story bootstrap, with one item per
+verdict.
 """
 
 import argparse
@@ -256,6 +262,24 @@ def counts(verdicts: list[dict], questions: set[str]) -> dict[str, dict]:
     return dict(out)
 
 
+def unanimous(v: dict) -> bool:
+    """Every vote is valid and all pick the same answer."""
+    letters = [vote["letter"] for vote in v["votes"]]
+    return bool(letters) and None not in letters and len(set(letters)) == 1
+
+
+def vote_agreement(verdicts: list[dict], questions: set[str], resamples: int = RESAMPLES, seed: int = SEED) -> dict:
+    """For each cell, the share of judged verdicts whose votes are unanimous."""
+    series = defaultdict(list)
+    for v in verdicts:
+        if v["question_id"] in questions and v["status"] == "judged":
+            series[verdict_cell(v)].append((v["article_id"], float(unanimous(v))))
+    if not series:
+        return {}
+    boot = Bootstrap(dict(series), resamples, seed)
+    return {cell: {**boot.mean(cell), "verdicts": len(series[cell])} for cell in sorted(series)}
+
+
 # Bias check
 
 
@@ -315,6 +339,7 @@ def analyze(run_dirs: list[Path], resamples: int = RESAMPLES, seed: int = SEED) 
         "main": accuracy_analysis(verdicts, questions, story_of, False, resamples, seed),
         "without_forfeits": accuracy_analysis(verdicts, questions, story_of, True, resamples, seed),
         "counts": counts(verdicts, questions),
+        "vote_agreement": vote_agreement(verdicts, questions, resamples, seed),
         "bias_check": bias_check(transcripts, questions, resamples, seed),
     }
 
@@ -341,6 +366,9 @@ def to_markdown(results: dict) -> str:
     lines += ["", "## Counts", "", "| Cell | Verdicts | Forfeits | Ties | Invalid votes |", "| --- | --- | --- | --- | --- |"]
     lines += [f"| {cell} | {c['verdicts']} | {c['forfeits']} | {c['ties']} | {c['invalid_votes']}/{c['votes']} |"
               for cell, c in sorted(results["counts"].items())]
+    lines += ["", "## Vote agreement (diagnostic): share of judged verdicts with unanimous votes", "",
+              "| Cell | Agreement (95% CI) | Judged verdicts |", "| --- | --- | --- |"]
+    lines += [f"| {cell} | {_ci(e)} | {e['verdicts']} |" for cell, e in results["vote_agreement"].items()]
     bias = results["bias_check"]
     lines += ["", "## Bias check: names, numbers, and dates per turn", "",
               "| Protocol | Uninformed | Informed | Difference (95% CI) |", "| --- | --- | --- | --- |"]

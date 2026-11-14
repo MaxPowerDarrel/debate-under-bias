@@ -113,3 +113,47 @@ Entry format:
 ## 2026-11-10: Add the biased-judge, uninformed-arguer cell and pilot it
 - **Claude:** Planned the cell and its cost in `tasks/todo.md`. Changed `judge.py`, `run.py` (new `cross` condition and `--transcripts-from`), and `analyze.py` (two new cells, judge and exploitation effects, six-cell completeness), added 8 tests, and added the cell to `PLAN.md`'s condition table and the preregistration skeleton's comments. Ran the 50-question pilot (900 Haiku calls, $0.28) and the merged analysis. Chose the six-cell completeness rule and the H3 split without a separate decision from Darrel.
 - **Darrel:** Asked for the plan and cost, then approved the build and the pilot run. Review of the code and result: not recorded.
+
+## 2026-11-13: Read the pilot data against the hypotheses
+- **Claude:** Reran `analyze.py` on the three pilot runs (output matches `analysis_pilot_v3` exactly). Wrote a scratch script (not committed) for per-question breakdowns: direction counts and sign tests per estimate, penalty concentration, consultant side, debate order, and vote agreement. Wrote the H1–H3 reading and cautions in `tasks/todo.md`. No API calls, and no changes to code, prompts, or `PREREGISTRATION.md`.
+- **Darrel:** Asked for the analysis. Review of the reading: not recorded.
+
+## 2026-11-13: Review and draft PREREGISTRATION.md sections 1–3
+- **Claude:** Reviewed sections 1–3 against `tasks/todo.md` and checked each pilot number against `analysis_pilot_v3`. Found a missing lock statement, a sequential description of the design, a pilot mean described as an average, unlabeled consultancy numbers, the debate H2 null left out, and an unresolved H3 decision rule that conflicts with itself. Drafted replacement text for sections 1–3 (saved to the session scratchpad), then applied it to `PREREGISTRATION.md`. Left ⚑ placeholders for the Section 2 background paragraph and the H1/H2 support rules, and kept the H3 conflict open for Section 6. No changes to prompts, configs, code, or analysis, and no dev runs.
+- **Darrel:** Asked for the review, the draft, and then for the edits to be applied. Decisions on the ⚑ items and the Section 2 background: not recorded. Wording of the applied text: not recorded.
+
+## 2026-11-13: Review the full PREREGISTRATION.md draft
+- **Claude:** Reviewed the whole draft for completeness, accuracy, form, style, and tone. Checked the embedded prompts against `prompts/*_v2/` by script, the pilot numbers against `analysis_pilot_v3/results.md`, the filters against `data.py`, the settings against `configs/final.yaml`, and the scoring, retry, and bootstrap rules against `judge.py`, `protocols.py`, and `analyze.py`. Reported findings in the session. No changes to `PREREGISTRATION.md`, prompts, configs, code, or analysis, and no API calls.
+- **Darrel:** Asked for the review. Decisions on the findings: not recorded.
+
+## 2026-11-13: Apply mechanical and accuracy fixes to PREREGISTRATION.md
+- **Claude:** Applied the fixes from the review by script. Moved the prompt text to an appendix rebuilt from `prompts/*_v2/` (now all 18 distinct prompt texts, adding the biased consultancy judge and the debater user message; checked verbatim by script). Corrected the retry, invalid-vote, tie, and forfeit rules to match `judge.py` and `protocols.py`, the seed and reproducibility statement, the quote-matching rule, the prompt-hash statement, the cost estimate (about $68), the Gate 3 history, and the list of changes from `PLAN.md`. Registered the forfeits-excluded check that `analyze.py` already runs. Left five ⚑ markers for open decisions. Did not change the hypotheses, the H2/H3 decision rules, the precision figure, the Section 2 background, or Section 10. No changes to prompts, configs, code, or analysis, and no API calls.
+- **Darrel:** Asked for the fixes to be applied. Review of the applied text and decisions on the ⚑ items: not recorded.
+
+## 2026-11-13: Add vote agreement to analyze.py
+- **Claude:** Added `unanimous` and `vote_agreement` to `analyze.py`: per cell, the share of judged verdicts where every vote is valid and all agree, with a story-bootstrap interval, written to `results.json` and `results.md`. Chose the definition (an invalid vote breaks agreement; forfeits are left out). Added 2 tests and one assertion (186 pass). Reran the pilot analysis to the session scratchpad: agreement matches the scratch-script figures (consultancy 0.905 → 0.830, debate 0.93 to 0.97) and every other number is identical to `analysis_pilot_v3`. Replaced the ⚑ on the diagnostic in `PREREGISTRATION.md` with the definition. No API calls.
+- **Darrel:** Asked for the addition. Review of the code and the definition: not recorded.
+
+## 2026-11-13: Resolve the four open flags in PREREGISTRATION.md and add the error-review draw
+- **Claude:** Recommended wording for the four ⚑ items, then applied it: the criterion for claiming exploitation (Section 7), the H3 split as secondary with no support rule, the error-review definition, draw, and five failure types, and the rule for a harness bug during the run (Section 9). Wrote `src/debate_bias/error_review.py` (the draw), `scripts/sample_errors.py` (the command), and 3 tests (189 pass). Chose that ties and forfeits are not errors, that only questions in the primary analysis count, and that each protocol gets a fresh seeded generator. Tried the script on the pilot runs with output to the session scratchpad (7 debate and 25 consultancy error transcripts). No API calls.
+- **Darrel:** Asked for the recommendations, then for all four to be applied and the script written. Review of the wording, the failure types, and the code: not recorded.
+
+## 2026-11-13: Change the support rule to the interval rule with a size label
+- **Claude:** Recommended fixes for the three open review items (the H3 decision-rule labels, the 0.10 bars against the pilot, and the stale precision figure), with a back-of-envelope precision estimate scaled from the pilot interval (about ±3 to ±4 points on H3 at 350 questions; the within-story correlation of 0.1 to 0.3 is an assumption). Applied the chosen version to `PREREGISTRATION.md`: one three-way interval rule for H1 to H3 (Sections 3 and 6), 0.10 kept as a size label with the original-rule verdict also reported, the new precision statement (Section 5), and a disclosure in Section 8 that the pilot's H3 and consultancy penalty pass the new rule and not the old. `PLAN.md` is unchanged. No changes to prompts, configs, or code, and no API calls.
+- **Darrel:** Chose the interval rule with the size label and disclosure over keeping 0.10 as the bar, and asked for it to be applied. Review of the applied wording: not recorded.
+
+## 2026-11-13: Replace the precision estimate with a simulation from the pilot
+- **Claude:** Wrote `scripts/precision_from_pilot.py`: it resamples the pilot's per-question scores (cells kept paired) into simulated final runs of 350 questions from 83 stories, with story sizes drawn from the train split, and applies the story bootstrap to each (2,000 runs, 2,000 resamples, seed 0). Chose the model for related questions (a story "theme" copied with probability sqrt(icc)) and the assumed correlations (0, 0.1, 0.3). Ran it (no API calls, dev not read) and replaced the Section 5 precision statement in `PREREGISTRATION.md` with its numbers: H3 half-width ±0.028 to ±0.042, and power at the pilot's effect sizes. No tests added for the script.
+- **Darrel:** Asked for the back-of-envelope figure to be replaced with a proper resampling. Review of the simulation's assumptions and the new wording: not recorded.
+
+## 2026-11-13: Reword H2 and record the failure-type confirmation
+- **Claude:** Reworded H2 in `PREREGISTRATION.md` Section 3 so it describes the comparison the penalty measures (biased judge with informed arguers against unbiased judge with uninformed arguers) and noted the change from `PLAN.md` in Section 8. The estimate and `PLAN.md` are unchanged. Recommended changes to the Section 2 background and Section 10 in the session without editing them.
+- **Darrel:** Asked for the H2 correction and the recommendations. Confirmed the five error-review failure types. The bug-rerun clause in Section 9: not recorded.
+
+## 2026-11-13: Apply the background and Section 10 changes to PREREGISTRATION.md
+- **Claude:** Replaced the Section 2 background paragraph with the refined version recommended in the session, and rewrote Section 10: corrected two of Darrel's bullets, kept his answer-wording bullet unchanged, removed the "single consultant" bullet, and added eight limitations (ceiling, pilot-chosen wording, partial knowledge, prompt asymmetry, one dataset with doubtful labels, no human judges, reproducibility, error review). The wording of the new text is Claude's.
+- **Darrel:** Wrote the original background paragraph and the original four limitations, and asked for the recommended changes to be applied. Review of the applied wording: not recorded.
+
+## 2026-11-13: Update PLAN.md and commit the preregistration draft
+- **Claude:** Updated `PLAN.md` to match the preregistration: the reworded H2, and a dated revision under "Expected precision" with the new precision estimate and the interval support rule. Committed the day's work. `PREREGISTRATION.md` is still marked DRAFT and is not locked.
+- **Darrel:** Confirmed the bug-rerun clause in Section 9, and asked for the `PLAN.md` update and the commit.
