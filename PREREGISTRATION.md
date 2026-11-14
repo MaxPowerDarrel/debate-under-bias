@@ -1,11 +1,11 @@
 # Preregistration
 
-**Status: DRAFT. Commit the final version before the final run (planned Nov 14, 2026).**
-Changes to prompts, filters, or analysis after that commit count as exploratory.
+**Status: FINAL. Locked on Nov 13, 2026, before the final run.**
+Changes to prompts, filters, or analysis after the lock commit count as exploratory.
 
 ## 1. Status and lock
 
-Lock date: Nov 14, 2026 (planned). The lock commit is recorded in the commit message or a git tag when this file is committed as final, not in this file.
+Lock date: Nov 13, 2026, one day ahead of the planned Nov 14. The lock commit carries the git tag `prereg-lock`. Its hash can't appear in this file, so `git rev-parse prereg-lock` gives it.
 
 Pilots used only the train split. The dev split was read once, on Nov 4, 2026, to apply the filters and count the questions. No prompt or model call has touched dev.
 

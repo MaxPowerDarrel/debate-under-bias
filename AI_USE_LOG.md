@@ -157,3 +157,7 @@ Entry format:
 ## 2026-11-13: Update PLAN.md and commit the preregistration draft
 - **Claude:** Updated `PLAN.md` to match the preregistration: the reworded H2, and a dated revision under "Expected precision" with the new precision estimate and the interval support rule. Committed the day's work. `PREREGISTRATION.md` is still marked DRAFT and is not locked.
 - **Darrel:** Confirmed the bug-rerun clause in Section 9, and asked for the `PLAN.md` update and the commit.
+
+## 2026-11-13: Lock the preregistration
+- **Claude:** Checked before the lock that no draft markers remain, that every v2 prompt file appears verbatim in the appendix, and that the tests pass (189). Updated the status header and the lock date in Section 1, committed `PREREGISTRATION.md` as final, and tagged the commit `prereg-lock`. No dev model calls have been made, and the final run has not started.
+- **Darrel:** Changed the status from DRAFT to FINAL himself and asked for the lock. His final read of the locked text: not recorded.
