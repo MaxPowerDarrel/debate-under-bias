@@ -1,0 +1,422 @@
+Pass: 350 questions waiting on 7000 calls, spent $0.00
+Submitted batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ with 2000 calls, estimated $49.65 in all
+Submitted batch msgbatch_01Vi29BVvmCWnyU7cL7fmK7W with 2000 calls, estimated $49.65 in all
+Submitted batch msgbatch_01J9KZ96i6qNDfhfSCDq1tqU with 2000 calls, estimated $49.65 in all
+Submitted batch msgbatch_017DWppfaM79oc6CJTJkgCZ7 with 1000 calls, estimated $49.65 in all
+Batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 2000 processing, 0 done
+Batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 2000 processing, 0 done
+Batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 2000 processing, 0 done
+Batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 2000 processing, 0 done
+Batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 2000 processing, 0 done
+Batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 2000 processing, 0 done
+Batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 2000 processing, 0 done
+Batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 2000 processing, 0 done
+Batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 2000 processing, 0 done
+Batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 2000 processing, 0 done
+Collected batch msgbatch_01NgAPemJtyMmZTBpoDdRoLQ: 0 to resubmit, 0 invalid
+Collected batch msgbatch_01Vi29BVvmCWnyU7cL7fmK7W: 0 to resubmit, 0 invalid
+Collected batch msgbatch_01J9KZ96i6qNDfhfSCDq1tqU: 0 to resubmit, 0 invalid
+Collected batch msgbatch_017DWppfaM79oc6CJTJkgCZ7: 0 to resubmit, 0 invalid
+Pass: 350 questions waiting on 2800 calls, spent $15.95
+Submitted batch msgbatch_016Dir2BV4MbRByACmVhDAMy with 2000 calls, estimated $48.59 in all
+Submitted batch msgbatch_01W5NJUMqyBgrybQLeC8XKsy with 800 calls, estimated $48.59 in all
+Batch msgbatch_016Dir2BV4MbRByACmVhDAMy: 2000 processing, 0 done
+Batch msgbatch_016Dir2BV4MbRByACmVhDAMy: 2000 processing, 0 done
+Batch msgbatch_016Dir2BV4MbRByACmVhDAMy: 2000 processing, 0 done
+Collected batch msgbatch_016Dir2BV4MbRByACmVhDAMy: 0 to resubmit, 0 invalid
+Collected batch msgbatch_01W5NJUMqyBgrybQLeC8XKsy: 0 to resubmit, 0 invalid
+Pass: 350 questions waiting on 2800 calls, spent $29.77
+Submitted batch msgbatch_01BUAuuTxFb4h5XV5ALwxoYo with 2000 calls, estimated $49.85 in all
+Submitted batch msgbatch_01N35XZpLZtAs5kzyz6CiJuX with 800 calls, estimated $49.85 in all
+Batch msgbatch_01BUAuuTxFb4h5XV5ALwxoYo: 2000 processing, 0 done
+Batch msgbatch_01BUAuuTxFb4h5XV5ALwxoYo: 2000 processing, 0 done
+Batch msgbatch_01BUAuuTxFb4h5XV5ALwxoYo: 2000 processing, 0 done
+Batch msgbatch_01BUAuuTxFb4h5XV5ALwxoYo: 2000 processing, 0 done
+Collected batch msgbatch_01BUAuuTxFb4h5XV5ALwxoYo: 0 to resubmit, 0 invalid
+Collected batch msgbatch_01N35XZpLZtAs5kzyz6CiJuX: 0 to resubmit, 0 invalid
+Pass: 350 questions waiting on 18900 calls, spent $44.92
+Submitted batch msgbatch_011SLvB6jwjtkTBigF2rfeAy with 2000 calls, estimated $7.63 in all
+Submitted batch msgbatch_01AxjeWvXLGfj118th5KA848 with 2000 calls, estimated $7.63 in all
+Submitted batch msgbatch_019TULowxeXjA7fBzET8LYmH with 2000 calls, estimated $7.63 in all
+Submitted batch msgbatch_01ChzdTxXcEUePke4k3WaFzf with 2000 calls, estimated $7.63 in all
+Submitted batch msgbatch_014u8NXN4nhCtdPW96DxeLni with 2000 calls, estimated $7.63 in all
+Submitted batch msgbatch_014hBjpMvxiRwS9ZeycEa4xj with 2000 calls, estimated $7.63 in all
+Submitted batch msgbatch_01WyvSKJqNbL4ES5BRNmgGTc with 2000 calls, estimated $7.63 in all
+Submitted batch msgbatch_01Lde1BExg5UqVTooUfBTF6m with 2000 calls, estimated $7.63 in all
+Submitted batch msgbatch_015qQgkymyjPCUvDx7hR8BVp with 2000 calls, estimated $7.63 in all
+Submitted batch msgbatch_01UVUPwaE26kv3v4MGnzv71B with 900 calls, estimated $7.63 in all
+Batch msgbatch_011SLvB6jwjtkTBigF2rfeAy: 2000 processing, 0 done
+Batch msgbatch_011SLvB6jwjtkTBigF2rfeAy: 2000 processing, 0 done
+Batch msgbatch_011SLvB6jwjtkTBigF2rfeAy: 2000 processing, 0 done
+Collected batch msgbatch_011SLvB6jwjtkTBigF2rfeAy: 0 to resubmit, 0 invalid
+Batch msgbatch_01AxjeWvXLGfj118th5KA848: 2000 processing, 0 done
+Batch msgbatch_01AxjeWvXLGfj118th5KA848: 2000 processing, 0 done
+Collected batch msgbatch_01AxjeWvXLGfj118th5KA848: 0 to resubmit, 0 invalid
+Collected batch msgbatch_019TULowxeXjA7fBzET8LYmH: 0 to resubmit, 0 invalid
+Collected batch msgbatch_01ChzdTxXcEUePke4k3WaFzf: 0 to resubmit, 0 invalid
+Collected batch msgbatch_014u8NXN4nhCtdPW96DxeLni: 0 to resubmit, 0 invalid
+Collected batch msgbatch_014hBjpMvxiRwS9ZeycEa4xj: 0 to resubmit, 0 invalid
+Collected batch msgbatch_01WyvSKJqNbL4ES5BRNmgGTc: 0 to resubmit, 0 invalid
+Collected batch msgbatch_01Lde1BExg5UqVTooUfBTF6m: 0 to resubmit, 0 invalid
+Collected batch msgbatch_015qQgkymyjPCUvDx7hR8BVp: 0 to resubmit, 0 invalid
+Batch msgbatch_01UVUPwaE26kv3v4MGnzv71B: 900 processing, 0 done
+Collected batch msgbatch_01UVUPwaE26kv3v4MGnzv71B: 0 to resubmit, 0 invalid
+Pass: 0 questions waiting on 0 calls, spent $50.75
+[1/350] 52845_75VB1ISR_2  spent $50.75
+[2/350] 52845_75VB1ISR_4  spent $50.75
+[3/350] 52845_75VB1ISR_5  spent $50.75
+[4/350] 30029_F5N22U40_5  spent $50.75
+[5/350] 63523_STSHLFEA_4  spent $50.75
+[6/350] 63523_STSHLFEA_8  spent $50.75
+[7/350] 63523_STSHLFEA_10  spent $50.75
+[8/350] 62476_Z8GFDCIZ_8  spent $50.75
+[9/350] 52845_91NAQ9LY_1  spent $50.75
+[10/350] 52845_91NAQ9LY_5  spent $50.75
+[11/350] 52845_91NAQ9LY_7  spent $50.75
+[12/350] 62139_V60QHFBZ_6  spent $50.75
+[13/350] 62476_0WTVH8V9_3  spent $50.75
+[14/350] 62476_0WTVH8V9_7  spent $50.75
+[15/350] 63041_SC73PXBG_3  spent $50.75
+[16/350] 63041_SC73PXBG_5  spent $50.75
+[17/350] 63041_SC73PXBG_8  spent $50.75
+[18/350] 63041_SC73PXBG_9  spent $50.75
+[19/350] 62261_SJZYUNBJ_3  spent $50.75
+[20/350] 62261_SJZYUNBJ_4  spent $50.75
+[21/350] 62261_SJZYUNBJ_5  spent $50.75
+[22/350] 62314_ARZ8DZS1_4  spent $50.75
+[23/350] 62314_ARZ8DZS1_8  spent $50.75
+[24/350] 61430_X9N4VIUX_6  spent $50.75
+[25/350] 61430_X9N4VIUX_7  spent $50.75
+[26/350] 63041_TFO74FFD_2  spent $50.75
+[27/350] 63041_TFO74FFD_3  spent $50.75
+[28/350] 63041_TFO74FFD_4  spent $50.75
+[29/350] 63041_TFO74FFD_8  spent $50.75
+[30/350] 30035_C0HFCNPI_4  spent $50.75
+[31/350] 61285_D8AIH84L_3  spent $50.75
+[32/350] 61285_D8AIH84L_4  spent $50.75
+[33/350] 61285_D8AIH84L_9  spent $50.75
+[34/350] 62261_99Z0HIK2_2  spent $50.75
+[35/350] 62261_99Z0HIK2_6  spent $50.75
+[36/350] 62261_99Z0HIK2_7  spent $50.75
+[37/350] 62261_99Z0HIK2_10  spent $50.75
+[38/350] 62314_QZHV11CY_1  spent $50.75
+[39/350] 62314_QZHV11CY_2  spent $50.75
+[40/350] 62314_QZHV11CY_4  spent $50.75
+[41/350] 62314_QZHV11CY_7  spent $50.75
+[42/350] 61430_R8T5MKW8_4  spent $50.75
+[43/350] 61430_R8T5MKW8_6  spent $50.75
+[44/350] 61430_R8T5MKW8_8  spent $50.75
+[45/350] 52855_MV65I88C_3  spent $50.75
+[46/350] 52855_MV65I88C_8  spent $50.75
+[47/350] 62085_C1SL2YBE_7  spent $50.75
+[48/350] 62085_C1SL2YBE_8  spent $50.75
+[49/350] 62498_D60CXKRF_2  spent $50.75
+[50/350] 62498_D60CXKRF_3  spent $50.75
+[51/350] 62498_D60CXKRF_6  spent $50.75
+[52/350] 61119_BNH82NAU_6  spent $50.75
+[53/350] 63616_MQ1O9T2Q_2  spent $50.75
+[54/350] 63616_MQ1O9T2Q_4  spent $50.75
+[55/350] 63616_MQ1O9T2Q_5  spent $50.75
+[56/350] 61467_TASABS87_2  spent $50.75
+[57/350] 61467_TASABS87_5  spent $50.75
+[58/350] 61467_TASABS87_9  spent $50.75
+[59/350] 52855_3OS4Y95O_3  spent $50.75
+[60/350] 52855_3OS4Y95O_10  spent $50.75
+[61/350] 62498_9BZIZ3SE_2  spent $50.75
+[62/350] 62498_9BZIZ3SE_3  spent $50.75
+[63/350] 62498_9BZIZ3SE_6  spent $50.75
+[64/350] 61119_27E8WDJC_3  spent $50.75
+[65/350] 61119_27E8WDJC_4  spent $50.75
+[66/350] 61119_27E8WDJC_6  spent $50.75
+[67/350] 61119_27E8WDJC_7  spent $50.75
+[68/350] 63616_AZTRNB8D_4  spent $50.75
+[69/350] 63616_AZTRNB8D_5  spent $50.75
+[70/350] 61467_S2P1EICS_1  spent $50.75
+[71/350] 61467_S2P1EICS_2  spent $50.75
+[72/350] 61467_S2P1EICS_3  spent $50.75
+[73/350] 60412_XM0T4STT_6  spent $50.75
+[74/350] 63855_F9FDT8EG_3  spent $50.75
+[75/350] 63633_TE8SMQXZ_1  spent $50.75
+[76/350] 63633_TE8SMQXZ_4  spent $50.75
+[77/350] 63633_TE8SMQXZ_7  spent $50.75
+[78/350] 61434_C4DV5MOT_4  spent $50.75
+[79/350] 61434_C4DV5MOT_5  spent $50.75
+[80/350] 61434_C4DV5MOT_6  spent $50.75
+[81/350] 61434_C4DV5MOT_8  spent $50.75
+[82/350] 63645_THY3SLLH_2  spent $50.75
+[83/350] 63645_THY3SLLH_6  spent $50.75
+[84/350] 61146_1K27MAZN_6  spent $50.75
+[85/350] 63936_L8TF3034_7  spent $50.75
+[86/350] 63936_L8TF3034_8  spent $50.75
+[87/350] 62382_0ORSPEA2_7  spent $50.75
+[88/350] 63862_XR1KS2MX_2  spent $50.75
+[89/350] 40965_7AWX7OE9_1  spent $50.75
+[90/350] 40965_7AWX7OE9_2  spent $50.75
+[91/350] 40965_7AWX7OE9_3  spent $50.75
+[92/350] 40965_7AWX7OE9_6  spent $50.75
+[93/350] 40965_7AWX7OE9_7  spent $50.75
+[94/350] 32665_BFH6JK2Z_1  spent $50.75
+[95/350] 32665_BFH6JK2Z_5  spent $50.75
+[96/350] 32665_BFH6JK2Z_6  spent $50.75
+[97/350] 32665_BFH6JK2Z_7  spent $50.75
+[98/350] 55815_ZJPKF6YE_2  spent $50.75
+[99/350] 55815_ZJPKF6YE_4  spent $50.75
+[100/350] 55815_ZJPKF6YE_5  spent $50.75
+[101/350] 55815_ZJPKF6YE_6  spent $50.75
+[102/350] 55815_ZJPKF6YE_7  spent $50.75
+[103/350] 63812_DQG6TAWJ_1  spent $50.75
+[104/350] 63812_DQG6TAWJ_2  spent $50.75
+[105/350] 63812_DQG6TAWJ_3  spent $50.75
+[106/350] 63812_DQG6TAWJ_9  spent $50.75
+[107/350] 63812_DQG6TAWJ_10  spent $50.75
+[108/350] 63130_PRY03TR7_3  spent $50.75
+[109/350] 63130_PRY03TR7_7  spent $50.75
+[110/350] 63916_C3PEXPCO_3  spent $50.75
+[111/350] 63916_C3PEXPCO_4  spent $50.75
+[112/350] 63916_C3PEXPCO_5  spent $50.75
+[113/350] 63916_C3PEXPCO_6  spent $50.75
+[114/350] 63916_C3PEXPCO_7  spent $50.75
+[115/350] 63916_C3PEXPCO_9  spent $50.75
+[116/350] 63833_V187YO4H_1  spent $50.75
+[117/350] 63833_V187YO4H_4  spent $50.75
+[118/350] 63833_V187YO4H_8  spent $50.75
+[119/350] 60412_K8F7TZVE_3  spent $50.75
+[120/350] 60412_K8F7TZVE_6  spent $50.75
+[121/350] 60412_K8F7TZVE_8  spent $50.75
+[122/350] 63855_OUVVRF81_7  spent $50.75
+[123/350] 62382_O6HCHTPL_1  spent $50.75
+[124/350] 62382_O6HCHTPL_3  spent $50.75
+[125/350] 62382_O6HCHTPL_6  spent $50.75
+[126/350] 62382_O6HCHTPL_8  spent $50.75
+[127/350] 63862_ZK5EYM9W_4  spent $50.75
+[128/350] 63862_ZK5EYM9W_5  spent $50.75
+[129/350] 63862_ZK5EYM9W_8  spent $50.75
+[130/350] 40965_ZUFZ7UG6_5  spent $50.75
+[131/350] 32665_VRYQXG3Y_2  spent $50.75
+[132/350] 32665_VRYQXG3Y_3  spent $50.75
+[133/350] 32665_VRYQXG3Y_4  spent $50.75
+[134/350] 32665_VRYQXG3Y_7  spent $50.75
+[135/350] 32665_VRYQXG3Y_10  spent $50.75
+[136/350] 55815_4DJBZQ7I_1  spent $50.75
+[137/350] 55815_4DJBZQ7I_9  spent $50.75
+[138/350] 63812_G3YOJRZD_3  spent $50.75
+[139/350] 63812_G3YOJRZD_4  spent $50.75
+[140/350] 63812_G3YOJRZD_6  spent $50.75
+[141/350] 63812_G3YOJRZD_7  spent $50.75
+[142/350] 63392_7YS4HHFI_7  spent $50.75
+[143/350] 63833_NVJ3AK4J_4  spent $50.75
+[144/350] 63833_NVJ3AK4J_5  spent $50.75
+[145/350] 63833_NVJ3AK4J_6  spent $50.75
+[146/350] 63936_1LRE5TR5_3  spent $50.75
+[147/350] 63936_1LRE5TR5_4  spent $50.75
+[148/350] 63936_1LRE5TR5_5  spent $50.75
+[149/350] 63150_Z3E7PK9T_3  spent $50.75
+[150/350] 63150_Z3E7PK9T_4  spent $50.75
+[151/350] 63150_Z3E7PK9T_10  spent $50.75
+[152/350] 63645_32M9QZ2I_1  spent $50.75
+[153/350] 63645_32M9QZ2I_6  spent $50.75
+[154/350] 63645_32M9QZ2I_7  spent $50.75
+[155/350] 63633_N3YQYXBC_4  spent $50.75
+[156/350] 63633_N3YQYXBC_6  spent $50.75
+[157/350] 63473_1VIHQ8TY_3  spent $50.75
+[158/350] 61434_J9JTAFPH_3  spent $50.75
+[159/350] 61434_J9JTAFPH_4  spent $50.75
+[160/350] 61434_J9JTAFPH_5  spent $50.75
+[161/350] 51650_B3KKWWD1_3  spent $50.75
+[162/350] 51483_9DX3EDKN_5  spent $50.75
+[163/350] 51461_OV4JLLBG_2  spent $50.75
+[164/350] 51461_OV4JLLBG_3  spent $50.75
+[165/350] 51461_OV4JLLBG_5  spent $50.75
+[166/350] 51461_OV4JLLBG_6  spent $50.75
+[167/350] 51461_OV4JLLBG_8  spent $50.75
+[168/350] 50818_U50BKW97_7  spent $50.75
+[169/350] 51687_XND06EI3_1  spent $50.75
+[170/350] 51687_XND06EI3_2  spent $50.75
+[171/350] 51027_8PULD7D5_7  spent $50.75
+[172/350] 51267_N197XHK2_1  spent $50.75
+[173/350] 51267_N197XHK2_2  spent $50.75
+[174/350] 51351_HAZYFZSV_4  spent $50.75
+[175/350] 51605_E8R4X4OP_3  spent $50.75
+[176/350] 49897_QQKS0TK3_1  spent $50.75
+[177/350] 49897_QQKS0TK3_2  spent $50.75
+[178/350] 49897_QQKS0TK3_3  spent $50.75
+[179/350] 49897_QQKS0TK3_9  spent $50.75
+[180/350] 51126_FCNHD3SS_3  spent $50.75
+[181/350] 51126_FCNHD3SS_4  spent $50.75
+[182/350] 51126_FCNHD3SS_5  spent $50.75
+[183/350] 51350_MZ3KCERV_7  spent $50.75
+[184/350] 50948_AGIAFP2X_5  spent $50.75
+[185/350] 50948_AGIAFP2X_8  spent $50.75
+[186/350] 51320_4G14XR5O_5  spent $50.75
+[187/350] 51320_4G14XR5O_6  spent $50.75
+[188/350] 51395_2PILALCT_3  spent $50.75
+[189/350] 51395_2PILALCT_5  spent $50.75
+[190/350] 51436_VJM64720_5  spent $50.75
+[191/350] 51362_ZBD9O785_4  spent $50.75
+[192/350] 51150_AP0HI29X_4  spent $50.75
+[193/350] 51150_AP0HI29X_9  spent $50.75
+[194/350] 51274_8Q2YNHG5_1  spent $50.75
+[195/350] 51274_8Q2YNHG5_2  spent $50.75
+[196/350] 51274_8Q2YNHG5_5  spent $50.75
+[197/350] 51274_8Q2YNHG5_9  spent $50.75
+[198/350] 51413_0Q4GSNGI_1  spent $50.75
+[199/350] 51413_0Q4GSNGI_5  spent $50.75
+[200/350] 51413_0Q4GSNGI_10  spent $50.75
+[201/350] 51650_RM2TQ88X_4  spent $50.75
+[202/350] 51650_RM2TQ88X_6  spent $50.75
+[203/350] 51650_RM2TQ88X_7  spent $50.75
+[204/350] 51483_T4WIZ6A8_3  spent $50.75
+[205/350] 51483_T4WIZ6A8_5  spent $50.75
+[206/350] 51461_YZX4JZ16_4  spent $50.75
+[207/350] 51461_YZX4JZ16_5  spent $50.75
+[208/350] 51461_YZX4JZ16_8  spent $50.75
+[209/350] 51461_YZX4JZ16_9  spent $50.75
+[210/350] 51687_3JYPCVFP_1  spent $50.75
+[211/350] 51687_3JYPCVFP_6  spent $50.75
+[212/350] 51027_FT44CSGW_1  spent $50.75
+[213/350] 51027_FT44CSGW_5  spent $50.75
+[214/350] 51267_AQABCPUB_1  spent $50.75
+[215/350] 51267_AQABCPUB_3  spent $50.75
+[216/350] 51267_AQABCPUB_4  spent $50.75
+[217/350] 51267_AQABCPUB_5  spent $50.75
+[218/350] 51351_HAXFQ1YV_3  spent $50.75
+[219/350] 51351_HAXFQ1YV_6  spent $50.75
+[220/350] 51351_HAXFQ1YV_7  spent $50.75
+[221/350] 51605_0HW4DYXI_3  spent $50.75
+[222/350] 51605_0HW4DYXI_6  spent $50.75
+[223/350] 51605_0HW4DYXI_9  spent $50.75
+[224/350] 49897_D53LJ447_3  spent $50.75
+[225/350] 49897_D53LJ447_4  spent $50.75
+[226/350] 49897_D53LJ447_8  spent $50.75
+[227/350] 49897_D53LJ447_9  spent $50.75
+[228/350] 51126_PGSZW543_1  spent $50.75
+[229/350] 51126_PGSZW543_5  spent $50.75
+[230/350] 51350_VLBM4QEI_5  spent $50.75
+[231/350] 50948_U9YCQJBR_3  spent $50.75
+[232/350] 50948_U9YCQJBR_5  spent $50.75
+[233/350] 51320_DIEFXLAR_1  spent $50.75
+[234/350] 51320_DIEFXLAR_3  spent $50.75
+[235/350] 51320_DIEFXLAR_5  spent $50.75
+[236/350] 51320_DIEFXLAR_6  spent $50.75
+[237/350] 51320_DIEFXLAR_8  spent $50.75
+[238/350] 51395_9PYVRG7M_1  spent $50.75
+[239/350] 51395_9PYVRG7M_2  spent $50.75
+[240/350] 51395_9PYVRG7M_3  spent $50.75
+[241/350] 51395_9PYVRG7M_5  spent $50.75
+[242/350] 51395_9PYVRG7M_8  spent $50.75
+[243/350] 51436_MT3ROY6U_3  spent $50.75
+[244/350] 51362_RJHWV3IH_4  spent $50.75
+[245/350] 51362_RJHWV3IH_5  spent $50.75
+[246/350] 51362_RJHWV3IH_7  spent $50.75
+[247/350] 51362_RJHWV3IH_8  spent $50.75
+[248/350] 51362_RJHWV3IH_9  spent $50.75
+[249/350] 51150_WUSMNF3O_1  spent $50.75
+[250/350] 51150_WUSMNF3O_3  spent $50.75
+[251/350] 51150_WUSMNF3O_4  spent $50.75
+[252/350] 51150_WUSMNF3O_7  spent $50.75
+[253/350] 51150_WUSMNF3O_8  spent $50.75
+[254/350] 51274_A9WCJN4U_2  spent $50.75
+[255/350] 51274_A9WCJN4U_5  spent $50.75
+[256/350] 51274_A9WCJN4U_6  spent $50.75
+[257/350] 51274_A9WCJN4U_8  spent $50.75
+[258/350] 51274_A9WCJN4U_9  spent $50.75
+[259/350] 51413_MS1UBQRG_2  spent $50.75
+[260/350] 51413_MS1UBQRG_4  spent $50.75
+[261/350] 51413_MS1UBQRG_5  spent $50.75
+[262/350] 51413_MS1UBQRG_6  spent $50.75
+[263/350] 51413_MS1UBQRG_9  spent $50.75
+[264/350] 51295_4B89NF9L_1  spent $50.75
+[265/350] 51295_4B89NF9L_4  spent $50.75
+[266/350] 51688_J2Q3XCWR_2  spent $50.75
+[267/350] 51688_J2Q3XCWR_9  spent $50.75
+[268/350] 51256_P2M1I2KR_3  spent $50.75
+[269/350] 51256_P2M1I2KR_6  spent $50.75
+[270/350] 50826_B2WQILEB_5  spent $50.75
+[271/350] 51688_5EVPD4SX_1  spent $50.75
+[272/350] 51295_JKASXZ9X_1  spent $50.75
+[273/350] 51295_JKASXZ9X_4  spent $50.75
+[274/350] 51295_JKASXZ9X_5  spent $50.75
+[275/350] 51295_JKASXZ9X_7  spent $50.75
+[276/350] 51256_MZNDC998_5  spent $50.75
+[277/350] 51256_MZNDC998_7  spent $50.75
+[278/350] 51256_MZNDC998_8  spent $50.75
+[279/350] 51256_MZNDC998_9  spent $50.75
+[280/350] 51256_MZNDC998_10  spent $50.75
+[281/350] 50826_K0FBX2G8_1  spent $50.75
+[282/350] 50826_K0FBX2G8_2  spent $50.75
+[283/350] 22073_H4OMDMMI_1  spent $50.75
+[284/350] 22073_H4OMDMMI_8  spent $50.75
+[285/350] 22218_P9A9DKW0_4  spent $50.75
+[286/350] 22346_3ZEMUJFW_5  spent $50.75
+[287/350] 22346_3ZEMUJFW_8  spent $50.75
+[288/350] 22346_3ZEMUJFW_9  spent $50.75
+[289/350] 22346_3ZEMUJFW_10  spent $50.75
+[290/350] 22462_F944PNS1_1  spent $50.75
+[291/350] 22524_N885O1MX_10  spent $50.75
+[292/350] 22579_RQ3GB4A1_6  spent $50.75
+[293/350] 22579_RQ3GB4A1_7  spent $50.75
+[294/350] 22867_TJ9SPIHC_2  spent $50.75
+[295/350] 22867_TJ9SPIHC_5  spent $50.75
+[296/350] 22875_L821878U_8  spent $50.75
+[297/350] 22875_L821878U_10  spent $50.75
+[298/350] 22876_2BBI3WOT_6  spent $50.75
+[299/350] 22876_2BBI3WOT_7  spent $50.75
+[300/350] 22958_CIJCBUXL_4  spent $50.75
+[301/350] 22958_CIJCBUXL_5  spent $50.75
+[302/350] 22958_CIJCBUXL_6  spent $50.75
+[303/350] 22958_CIJCBUXL_9  spent $50.75
+[304/350] 22966_6AF3S2P3_6  spent $50.75
+[305/350] 22966_6AF3S2P3_10  spent $50.75
+[306/350] 22967_0XT2L7PI_7  spent $50.75
+[307/350] 22967_0XT2L7PI_9  spent $50.75
+[308/350] 23104_4MQFQVNM_1  spent $50.75
+[309/350] 23160_KJQ9Z35G_7  spent $50.75
+[310/350] 22867_IZGAWLCJ_2  spent $50.75
+[311/350] 22867_IZGAWLCJ_7  spent $50.75
+[312/350] 22875_539MKDEK_8  spent $50.75
+[313/350] 22073_KJM8YN1V_1  spent $50.75
+[314/350] 22073_KJM8YN1V_5  spent $50.75
+[315/350] 22073_KJM8YN1V_10  spent $50.75
+[316/350] 22102_NZCNKEWF_3  spent $50.75
+[317/350] 22218_WHLS3NE4_7  spent $50.75
+[318/350] 22346_DOS3P3V1_1  spent $50.75
+[319/350] 22346_DOS3P3V1_9  spent $50.75
+[320/350] 22524_O8TC9MBX_1  spent $50.75
+[321/350] 22524_O8TC9MBX_7  spent $50.75
+[322/350] 22579_U2JO4GD0_1  spent $50.75
+[323/350] 22579_U2JO4GD0_2  spent $50.75
+[324/350] 22958_8T1HU0MH_9  spent $50.75
+[325/350] 22958_8T1HU0MH_10  spent $50.75
+[326/350] 22967_23S4S1XW_8  spent $50.75
+[327/350] 23104_SRUMQVUD_2  spent $50.75
+[328/350] 23104_SRUMQVUD_3  spent $50.75
+[329/350] 23104_SRUMQVUD_7  spent $50.75
+[330/350] 23160_I33FJB5C_5  spent $50.75
+[331/350] 24290_VOTN7PR9_10  spent $50.75
+[332/350] 31736_TV0CUXDH_4  spent $50.75
+[333/350] 31736_TV0CUXDH_6  spent $50.75
+[334/350] 31736_TV0CUXDH_8  spent $50.75
+[335/350] 59368_LBNEJQ7W_5  spent $50.75
+[336/350] 59368_LBNEJQ7W_9  spent $50.75
+[337/350] 59679_R3X6H4RG_4  spent $50.75
+[338/350] 31282_V88KC9HV_2  spent $50.75
+[339/350] 60897_TMYJD4UO_5  spent $50.75
+[340/350] 60897_TMYJD4UO_6  spent $50.75
+[341/350] 31599_F0FBY5RW_9  spent $50.75
+[342/350] 60745_RWAY1IZC_7  spent $50.75
+[343/350] 60745_RWAY1IZC_8  spent $50.75
+[344/350] 24290_66ER3O5Z_1  spent $50.75
+[345/350] 31736_9W69Z6VQ_5  spent $50.75
+[346/350] 59368_ZBH0NQ5U_6  spent $50.75
+[347/350] 59679_LHYOIDR5_8  spent $50.75
+[348/350] 31282_BQYW9TCH_4  spent $50.75
+[349/350] 31282_BQYW9TCH_10  spent $50.75
+[350/350] 60897_628POLKP_5  spent $50.75
+naive                          accuracy 0.584 (0.584 without forfeits)  over 700 orders, 0 forfeits, 0 ties, 0/2100 invalid votes
+expert                         accuracy 0.964 (0.964 without forfeits)  over 700 orders, 0 forfeits, 0 ties, 0/2100 invalid votes
+consultancy                    accuracy 0.851 (0.851 without forfeits)  over 1400 orders, 0 forfeits, 0 ties, 0/4200 invalid votes
+debate                         accuracy 0.907 (0.907 without forfeits)  over 700 orders, 0 forfeits, 0 ties, 0/2100 invalid votes
+consultancy biased uninformed  accuracy 0.810 (0.810 without forfeits)  over 1400 orders, 0 forfeits, 0 ties, 0/4200 invalid votes
+debate biased uninformed       accuracy 0.913 (0.913 without forfeits)  over 700 orders, 0 forfeits, 0 ties, 0/2100 invalid votes
+consultancy biased             accuracy 0.810 (0.810 without forfeits)  over 1400 orders, 0 forfeits, 0 ties, 0/4200 invalid votes
+debate biased                  accuracy 0.923 (0.923 without forfeits)  over 700 orders, 0 forfeits, 0 ties, 0/2100 invalid votes

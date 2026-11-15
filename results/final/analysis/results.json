@@ -1,0 +1,529 @@
+{
+  "settings": {
+    "runs": [
+      "results/final/final"
+    ],
+    "resamples": 10000,
+    "seed": 0
+  },
+  "questions": {
+    "seen": 350,
+    "analyzed": 350,
+    "dropped": [],
+    "stories": 83
+  },
+  "missing": {},
+  "main": {
+    "accuracy": {
+      "consultancy": {
+        "estimate": 0.8507142857142858,
+        "low": 0.8275070433175137,
+        "high": 0.8732879045201747,
+        "questions": 350
+      },
+      "consultancy:correct": {
+        "estimate": 0.9571428571428572,
+        "low": 0.9363898601398601,
+        "high": 0.975650974025974,
+        "questions": 350
+      },
+      "consultancy:distractor": {
+        "estimate": 0.7442857142857143,
+        "low": 0.7018459722796199,
+        "high": 0.7853027971800257,
+        "questions": 350
+      },
+      "consultancy_biased": {
+        "estimate": 0.81,
+        "low": 0.7849130371897091,
+        "high": 0.8350147757355405,
+        "questions": 350
+      },
+      "consultancy_biased:correct": {
+        "estimate": 0.9828571428571429,
+        "low": 0.970350118781123,
+        "high": 0.9935483870967742,
+        "questions": 350
+      },
+      "consultancy_biased:distractor": {
+        "estimate": 0.6371428571428571,
+        "low": 0.5892819836848389,
+        "high": 0.6846164772727272,
+        "questions": 350
+      },
+      "consultancy_biased_uninformed": {
+        "estimate": 0.81,
+        "low": 0.7843137254901961,
+        "high": 0.8355658271563342,
+        "questions": 350
+      },
+      "consultancy_biased_uninformed:correct": {
+        "estimate": 0.9642857142857143,
+        "low": 0.9458680555555555,
+        "high": 0.9808823529411764,
+        "questions": 350
+      },
+      "consultancy_biased_uninformed:distractor": {
+        "estimate": 0.6557142857142857,
+        "low": 0.61,
+        "high": 0.7014307359307359,
+        "questions": 350
+      },
+      "debate": {
+        "estimate": 0.9071428571428571,
+        "low": 0.882440370801295,
+        "high": 0.9309829172836894,
+        "questions": 350
+      },
+      "debate_biased": {
+        "estimate": 0.9228571428571428,
+        "low": 0.8977876669797953,
+        "high": 0.9459017591793691,
+        "questions": 350
+      },
+      "debate_biased_uninformed": {
+        "estimate": 0.9128571428571428,
+        "low": 0.8878627968337731,
+        "high": 0.9373177842565598,
+        "questions": 350
+      },
+      "expert": {
+        "estimate": 0.9642857142857143,
+        "low": 0.943342776203966,
+        "high": 0.9824804719731558,
+        "questions": 350
+      },
+      "naive": {
+        "estimate": 0.5842857142857143,
+        "low": 0.5388730185585258,
+        "high": 0.6264548017652003,
+        "questions": 350
+      }
+    },
+    "hypotheses": {
+      "H1: debate - consultancy (unbiased)": {
+        "estimate": 0.056428571428571384,
+        "low": 0.03243110957342885,
+        "high": 0.08104178506670993
+      },
+      "H2: consultancy penalty": {
+        "estimate": 0.0407142857142857,
+        "low": 0.016862170087976525,
+        "high": 0.06428729923922229
+      },
+      "H2: debate penalty": {
+        "estimate": -0.01571428571428568,
+        "low": -0.035820895522388096,
+        "high": 0.005405405405405353
+      },
+      "H3: consultancy penalty - debate penalty": {
+        "estimate": 0.056428571428571384,
+        "low": 0.02646077354279479,
+        "high": 0.08545289060977987
+      },
+      "Judge effect: consultancy": {
+        "estimate": 0.0407142857142857,
+        "low": 0.02440828402366857,
+        "high": 0.05692361111111114
+      },
+      "Judge effect: debate": {
+        "estimate": -0.005714285714285672,
+        "low": -0.019663474298858702,
+        "high": 0.008771929824561323
+      },
+      "Exploitation effect: consultancy": {
+        "estimate": 0.0,
+        "low": -0.02259206766643619,
+        "high": 0.022923894524897327
+      },
+      "Exploitation effect: debate": {
+        "estimate": -0.010000000000000009,
+        "low": -0.031152868602896407,
+        "high": 0.012466239612188344
+      },
+      "H3 from the judge effect": {
+        "estimate": 0.046428571428571375,
+        "low": 0.023772943276677196,
+        "high": 0.06877047368711858
+      },
+      "H3 from the exploitation effect": {
+        "estimate": 0.010000000000000009,
+        "low": -0.020251440845767583,
+        "high": 0.03882867462553296
+      }
+    }
+  },
+  "without_forfeits": {
+    "accuracy": {
+      "consultancy": {
+        "estimate": 0.8507142857142858,
+        "low": 0.8275070433175137,
+        "high": 0.8732879045201747,
+        "questions": 350
+      },
+      "consultancy:correct": {
+        "estimate": 0.9571428571428572,
+        "low": 0.9363898601398601,
+        "high": 0.975650974025974,
+        "questions": 350
+      },
+      "consultancy:distractor": {
+        "estimate": 0.7442857142857143,
+        "low": 0.7018459722796199,
+        "high": 0.7853027971800257,
+        "questions": 350
+      },
+      "consultancy_biased": {
+        "estimate": 0.81,
+        "low": 0.7849130371897091,
+        "high": 0.8350147757355405,
+        "questions": 350
+      },
+      "consultancy_biased:correct": {
+        "estimate": 0.9828571428571429,
+        "low": 0.970350118781123,
+        "high": 0.9935483870967742,
+        "questions": 350
+      },
+      "consultancy_biased:distractor": {
+        "estimate": 0.6371428571428571,
+        "low": 0.5892819836848389,
+        "high": 0.6846164772727272,
+        "questions": 350
+      },
+      "consultancy_biased_uninformed": {
+        "estimate": 0.81,
+        "low": 0.7843137254901961,
+        "high": 0.8355658271563342,
+        "questions": 350
+      },
+      "consultancy_biased_uninformed:correct": {
+        "estimate": 0.9642857142857143,
+        "low": 0.9458680555555555,
+        "high": 0.9808823529411764,
+        "questions": 350
+      },
+      "consultancy_biased_uninformed:distractor": {
+        "estimate": 0.6557142857142857,
+        "low": 0.61,
+        "high": 0.7014307359307359,
+        "questions": 350
+      },
+      "debate": {
+        "estimate": 0.9071428571428571,
+        "low": 0.882440370801295,
+        "high": 0.9309829172836894,
+        "questions": 350
+      },
+      "debate_biased": {
+        "estimate": 0.9228571428571428,
+        "low": 0.8977876669797953,
+        "high": 0.9459017591793691,
+        "questions": 350
+      },
+      "debate_biased_uninformed": {
+        "estimate": 0.9128571428571428,
+        "low": 0.8878627968337731,
+        "high": 0.9373177842565598,
+        "questions": 350
+      },
+      "expert": {
+        "estimate": 0.9642857142857143,
+        "low": 0.943342776203966,
+        "high": 0.9824804719731558,
+        "questions": 350
+      },
+      "naive": {
+        "estimate": 0.5842857142857143,
+        "low": 0.5388730185585258,
+        "high": 0.6264548017652003,
+        "questions": 350
+      }
+    },
+    "hypotheses": {
+      "H1: debate - consultancy (unbiased)": {
+        "estimate": 0.056428571428571384,
+        "low": 0.03243110957342885,
+        "high": 0.08104178506670993
+      },
+      "H2: consultancy penalty": {
+        "estimate": 0.0407142857142857,
+        "low": 0.016862170087976525,
+        "high": 0.06428729923922229
+      },
+      "H2: debate penalty": {
+        "estimate": -0.01571428571428568,
+        "low": -0.035820895522388096,
+        "high": 0.005405405405405353
+      },
+      "H3: consultancy penalty - debate penalty": {
+        "estimate": 0.056428571428571384,
+        "low": 0.02646077354279479,
+        "high": 0.08545289060977987
+      },
+      "Judge effect: consultancy": {
+        "estimate": 0.0407142857142857,
+        "low": 0.02440828402366857,
+        "high": 0.05692361111111114
+      },
+      "Judge effect: debate": {
+        "estimate": -0.005714285714285672,
+        "low": -0.019663474298858702,
+        "high": 0.008771929824561323
+      },
+      "Exploitation effect: consultancy": {
+        "estimate": 0.0,
+        "low": -0.02259206766643619,
+        "high": 0.022923894524897327
+      },
+      "Exploitation effect: debate": {
+        "estimate": -0.010000000000000009,
+        "low": -0.031152868602896407,
+        "high": 0.012466239612188344
+      },
+      "H3 from the judge effect": {
+        "estimate": 0.046428571428571375,
+        "low": 0.023772943276677196,
+        "high": 0.06877047368711858
+      },
+      "H3 from the exploitation effect": {
+        "estimate": 0.010000000000000009,
+        "low": -0.020251440845767583,
+        "high": 0.03882867462553296
+      }
+    }
+  },
+  "counts": {
+    "naive": {
+      "verdicts": 700,
+      "forfeits": 0,
+      "ties": 0,
+      "votes": 2100,
+      "invalid_votes": 0
+    },
+    "expert": {
+      "verdicts": 700,
+      "forfeits": 0,
+      "ties": 0,
+      "votes": 2100,
+      "invalid_votes": 0
+    },
+    "debate": {
+      "verdicts": 700,
+      "forfeits": 0,
+      "ties": 0,
+      "votes": 2100,
+      "invalid_votes": 0
+    },
+    "consultancy": {
+      "verdicts": 1400,
+      "forfeits": 0,
+      "ties": 0,
+      "votes": 4200,
+      "invalid_votes": 0
+    },
+    "debate_biased_uninformed": {
+      "verdicts": 700,
+      "forfeits": 0,
+      "ties": 0,
+      "votes": 2100,
+      "invalid_votes": 0
+    },
+    "consultancy_biased_uninformed": {
+      "verdicts": 1400,
+      "forfeits": 0,
+      "ties": 0,
+      "votes": 4200,
+      "invalid_votes": 0
+    },
+    "debate_biased": {
+      "verdicts": 700,
+      "forfeits": 0,
+      "ties": 0,
+      "votes": 2100,
+      "invalid_votes": 0
+    },
+    "consultancy_biased": {
+      "verdicts": 1400,
+      "forfeits": 0,
+      "ties": 0,
+      "votes": 4200,
+      "invalid_votes": 0
+    }
+  },
+  "vote_agreement": {
+    "consultancy": {
+      "estimate": 0.8742857142857143,
+      "low": 0.8540501784157329,
+      "high": 0.8940445852476183,
+      "verdicts": 1400
+    },
+    "consultancy_biased": {
+      "estimate": 0.8692857142857143,
+      "low": 0.8509170857742898,
+      "high": 0.8865490557636098,
+      "verdicts": 1400
+    },
+    "consultancy_biased_uninformed": {
+      "estimate": 0.8607142857142858,
+      "low": 0.8400297619047619,
+      "high": 0.8802643693156403,
+      "verdicts": 1400
+    },
+    "debate": {
+      "estimate": 0.9028571428571428,
+      "low": 0.8767308276097597,
+      "high": 0.9254770850580568,
+      "verdicts": 700
+    },
+    "debate_biased": {
+      "estimate": 0.8957142857142857,
+      "low": 0.8738865639064516,
+      "high": 0.9166666666666666,
+      "verdicts": 700
+    },
+    "debate_biased_uninformed": {
+      "estimate": 0.9085714285714286,
+      "low": 0.8837918423010166,
+      "high": 0.9303993734948826,
+      "verdicts": 700
+    },
+    "expert": {
+      "estimate": 0.9557142857142857,
+      "low": 0.9290218386104295,
+      "high": 0.9763416254750491,
+      "verdicts": 700
+    },
+    "naive": {
+      "estimate": 0.7871428571428571,
+      "low": 0.754180602006689,
+      "high": 0.8191847578995226,
+      "verdicts": 700
+    }
+  },
+  "bias_check": {
+    "per_turn": {
+      "consultancy": {
+        "uninformed": {
+          "estimate": 11.00095238095238,
+          "low": 10.146188242193228,
+          "high": 11.891806539369675
+        },
+        "informed": {
+          "estimate": 12.064761904761905,
+          "low": 11.220322932717,
+          "high": 12.957203125
+        },
+        "difference": {
+          "estimate": 1.0638095238095246,
+          "low": 0.8928205097788009,
+          "high": 1.2427450098256354
+        }
+      },
+      "debate": {
+        "uninformed": {
+          "estimate": 6.150476190476191,
+          "low": 5.680156352004178,
+          "high": 6.649952309217457
+        },
+        "informed": {
+          "estimate": 6.555714285714286,
+          "low": 6.069488554107854,
+          "high": 7.079005552536381
+        },
+        "difference": {
+          "estimate": 0.4052380952380954,
+          "low": 0.2796007968876546,
+          "high": 0.5326945922288154
+        }
+      }
+    },
+    "by_side_and_round": [
+      {
+        "protocol": "consultancy",
+        "side": "correct",
+        "round": 1,
+        "uninformed": 14.077142857142857,
+        "informed": 15.422857142857143
+      },
+      {
+        "protocol": "consultancy",
+        "side": "correct",
+        "round": 2,
+        "uninformed": 9.98857142857143,
+        "informed": 11.005714285714285
+      },
+      {
+        "protocol": "consultancy",
+        "side": "correct",
+        "round": 3,
+        "uninformed": 9.825714285714286,
+        "informed": 10.551428571428572
+      },
+      {
+        "protocol": "consultancy",
+        "side": "distractor",
+        "round": 1,
+        "uninformed": 12.32,
+        "informed": 14.374285714285714
+      },
+      {
+        "protocol": "consultancy",
+        "side": "distractor",
+        "round": 2,
+        "uninformed": 10.102857142857143,
+        "informed": 10.688571428571429
+      },
+      {
+        "protocol": "consultancy",
+        "side": "distractor",
+        "round": 3,
+        "uninformed": 9.691428571428572,
+        "informed": 10.345714285714285
+      },
+      {
+        "protocol": "debate",
+        "side": "correct",
+        "round": 1,
+        "uninformed": 7.422857142857143,
+        "informed": 7.962857142857143
+      },
+      {
+        "protocol": "debate",
+        "side": "correct",
+        "round": 2,
+        "uninformed": 5.562857142857143,
+        "informed": 6.002857142857143
+      },
+      {
+        "protocol": "debate",
+        "side": "correct",
+        "round": 3,
+        "uninformed": 5.642857142857143,
+        "informed": 6.097142857142857
+      },
+      {
+        "protocol": "debate",
+        "side": "distractor",
+        "round": 1,
+        "uninformed": 6.748571428571428,
+        "informed": 7.351428571428571
+      },
+      {
+        "protocol": "debate",
+        "side": "distractor",
+        "round": 2,
+        "uninformed": 5.694285714285714,
+        "informed": 6.008571428571429
+      },
+      {
+        "protocol": "debate",
+        "side": "distractor",
+        "round": 3,
+        "uninformed": 5.831428571428572,
+        "informed": 5.911428571428571
+      }
+    ],
+    "rule_flags": []
+  }
+}

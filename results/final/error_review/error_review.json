@@ -1,0 +1,266 @@
+{
+  "debate": {
+    "eligible": 41,
+    "drawn": [
+      {
+        "protocol": "debate",
+        "question_id": "22958_8T1HU0MH_10",
+        "consultant_side": null,
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "23104_SRUMQVUD_7",
+        "consultant_side": null,
+        "wrong_orders": [
+          1
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "51126_FCNHD3SS_4",
+        "consultant_side": null,
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "51350_VLBM4QEI_5",
+        "consultant_side": null,
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "51362_RJHWV3IH_4",
+        "consultant_side": null,
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "51413_MS1UBQRG_2",
+        "consultant_side": null,
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "51650_RM2TQ88X_6",
+        "consultant_side": null,
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "52855_3OS4Y95O_10",
+        "consultant_side": null,
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "55815_ZJPKF6YE_2",
+        "consultant_side": null,
+        "wrong_orders": [
+          1
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "55815_ZJPKF6YE_5",
+        "consultant_side": null,
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "61430_X9N4VIUX_7",
+        "consultant_side": null,
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "61467_TASABS87_9",
+        "consultant_side": null,
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "62085_C1SL2YBE_7",
+        "consultant_side": null,
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "62085_C1SL2YBE_8",
+        "consultant_side": null,
+        "wrong_orders": [
+          1
+        ]
+      },
+      {
+        "protocol": "debate",
+        "question_id": "63812_DQG6TAWJ_10",
+        "consultant_side": null,
+        "wrong_orders": [
+          0,
+          1
+        ]
+      }
+    ]
+  },
+  "consultancy": {
+    "eligible": 166,
+    "drawn": [
+      {
+        "protocol": "consultancy",
+        "question_id": "22875_539MKDEK_8",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "49897_QQKS0TK3_1",
+        "consultant_side": "correct",
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "51267_AQABCPUB_5",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "51320_DIEFXLAR_1",
+        "consultant_side": "correct",
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "51351_HAXFQ1YV_3",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "51395_9PYVRG7M_1",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "51687_3JYPCVFP_6",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "52855_3OS4Y95O_10",
+        "consultant_side": "correct",
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "55815_ZJPKF6YE_2",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "59368_LBNEJQ7W_5",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "61467_TASABS87_2",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "62085_C1SL2YBE_7",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "62382_O6HCHTPL_1",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "62382_O6HCHTPL_3",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0,
+          1
+        ]
+      },
+      {
+        "protocol": "consultancy",
+        "question_id": "63812_G3YOJRZD_7",
+        "consultant_side": "distractor",
+        "wrong_orders": [
+          0
+        ]
+      }
+    ]
+  }
+}

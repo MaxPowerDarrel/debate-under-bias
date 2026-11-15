@@ -161,3 +161,23 @@ Entry format:
 ## 2026-11-13: Lock the preregistration
 - **Claude:** Checked before the lock that no draft markers remain, that every v2 prompt file appears verbatim in the appendix, and that the tests pass (189). Updated the status header and the lock date in Section 1, committed `PREREGISTRATION.md` as final, and tagged the commit `prereg-lock`. No dev model calls have been made, and the final run has not started.
 - **Darrel:** Changed the status from DRAFT to FINAL himself and asked for the lock. His final read of the locked text: not recorded.
+
+## 2026-11-13: Start the locked final run
+- **Claude:** Before starting, checked that the tests pass (189), that nothing had changed since the `prereg-lock` tag, and that no final-run output existed. Stated the expected cost (about $68, with a $150 cap). Then started the run once on the dev split with all conditions through the Batch API: `uv run python -m debate_bias.run --config configs/final.yaml --run final --batch`. Output goes to `results/final/final/`, and the console log goes to `results/final/run_log.txt`. The first pass sent 7,000 calls for 350 questions.
+- **Darrel:** Approved the cost and asked for the run to start on November 13, one day ahead of the schedule.
+
+## 2026-11-14: Final run finished and checked for completeness
+- **Claude:** The final run finished in 5 batch passes with no errors, at a cost of $50.75 against the $150 cap. Checked the records: 2,100 transcripts (350 questions × 3 protocol transcripts × informed and uninformed arguers) and 7,700 verdicts (22 per question), covering all 350 questions, with 0 forfeits, 0 ties, and 0 invalid votes. The preregistered analysis has not been run.
+- **Darrel:** not recorded.
+
+## 2026-11-14: Run the preregistered analysis on the final run
+- **Claude:** Ran the preregistered command once: `uv run python -m debate_bias.analyze --runs results/final/final --out results/final/analysis` (10,000 story-bootstrap resamples, seed 0). Output: `results.json`, `results.md`, and `accuracy.png`. All 350 questions from 83 stories were analyzed, none were dropped, and there were 0 forfeits, ties, invalid votes, and flagged rule mentions. Applied the Section 6 and Section 7 rules in the session summary. No code, prompts, or configs changed, and no API calls.
+- **Darrel:** Asked for the analysis to be run. Interpretation of the results: not recorded.
+
+## 2026-11-14: Run the error-review draw on the final run
+- **Claude:** Ran the preregistered draw: `uv run python scripts/sample_errors.py --runs results/final/final --out results/final/error_review`. It drew 15 debate and 15 consultancy error transcripts (consultancy from 166 error transcripts) and wrote `error_review.json`. No transcripts were read or coded, no code changed, and no API calls.
+- **Darrel:** Asked for the draw. The coding: not started.
+
+## 2026-11-15: Commit the final-run results
+- **Claude:** Committed the final run's console log, the analysis output (`results.md`, `results.json`, `accuracy.png`), the error-review draw, and this log. Left the raw run records (`calls.jsonl`, `transcripts.jsonl`, `verdicts.jsonl`, `batches.json`) out of git: they quote the stories, whose licensing hasn't been checked, and `calls.jsonl` is about 100 MB.
+- **Darrel:** Asked for the final-run results to be committed. Decision on committing the raw records: not recorded.
