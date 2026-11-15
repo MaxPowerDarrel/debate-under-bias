@@ -181,3 +181,7 @@ Entry format:
 ## 2026-11-15: Commit the final-run results
 - **Claude:** Committed the final run's console log, the analysis output (`results.md`, `results.json`, `accuracy.png`), the error-review draw, and this log. Left the raw run records (`calls.jsonl`, `transcripts.jsonl`, `verdicts.jsonl`, `batches.json`) out of git: they quote the stories, whose licensing hasn't been checked, and `calls.jsonl` is about 100 MB.
 - **Darrel:** Asked for the final-run results to be committed. Decision on committing the raw records: not recorded.
+
+## 2026-11-15: Ignore the raw final-run records
+- **Claude:** Added `results/final/final/` to `.gitignore` so the raw run records can't be committed by accident, and committed the change.
+- **Darrel:** Asked for the folder to be ignored. Decision on publishing the transcripts: not recorded.
