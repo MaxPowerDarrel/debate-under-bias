@@ -205,3 +205,7 @@ Entry format:
 ## 2026-11-17: Make analyze.py read the gzip records directly
 - **Claude:** Added `read_records` to `analyze.py`. It reads `<name>.jsonl` or `<name>.jsonl.gz`, and refuses a folder that holds both. `load_runs` now uses it, so `scripts/sample_errors.py` reads gzip records too, and `scripts/count_untagged_quotes.py` was switched to it. Updated the example commands to `results/transcripts/final`. Added 1 test (193 pass). Running from `results/transcripts/final` reproduces `results.md`, `results.json`, `accuracy.png`, and `error_review.json` exactly (the run path aside), plus the untagged-quote totals. This changes how `analyze.py` reads files after the lock, but no analysis code and no numbers. Committed.
 - **Darrel:** Asked for `analyze.py` to read the `.gz` files directly.
+
+## 2026-11-17: Add data attribution to the README
+- **Claude:** Added a "Data and licensing" section to `README.md`. It credits QuALITY (Pang et al., 2022) under CC BY 4.0, lists the changes made to the questions (filters, two options), and states that the stories are US public-domain Project Gutenberg texts that appear only as short excerpts, with a note for readers outside the US and a no-affiliation line. The wording is Claude's. Committed and pushed.
+- **Darrel:** Asked for the attribution. Review of the wording: not recorded.

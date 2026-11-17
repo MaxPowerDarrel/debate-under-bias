@@ -34,6 +34,28 @@ uv run pytest
 Download [QuALITY v1.0.1](https://github.com/nyu-mll/quality/blob/main/data/v1.0.1/QuALITY.v1.0.1.zip)
 and unzip it into `data/`, which git ignores.
 
+## Data and licensing
+
+This project uses the QuALITY dataset from
+[Pang et al. (2022), "QuALITY: Question Answering with Long Input Texts, Yes!"](https://aclanthology.org/2022.naacl-main.391),
+which is distributed under a
+[CC BY 4.0 License](https://creativecommons.org/licenses/by/4.0/). The dataset itself is
+not redistributed here. The published run records in `results/transcripts/` contain QuALITY
+questions and answer options, with these changes:
+
+- Only Project Gutenberg stories and questions marked `difficult` are kept, and further
+  filters keep questions that annotators found unambiguous (`src/debate_bias/data.py` and
+  `PREREGISTRATION.md`).
+- Each question is reduced to two options: the gold answer and the distractor that the
+  annotators most often named as best.
+
+The stories come from [Project Gutenberg](https://www.gutenberg.org). The run records
+include short excerpts quoted by the models, never full stories. These texts are in the
+public domain in the United States: nearly all carry Project Gutenberg's note that no
+renewal of their US copyright was found. If you are outside the United States, check
+your country's copyright law before reusing them. This project is not affiliated with or
+endorsed by Project Gutenberg.
+
 ## Layout
 
 | Path | Purpose |
