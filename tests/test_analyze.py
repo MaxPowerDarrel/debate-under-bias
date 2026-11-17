@@ -1,10 +1,12 @@
+import gzip
 import json
 
 import numpy as np
 import pytest
 
 from debate_bias.analyze import (CELLS, cell_name, Bootstrap, DuplicateRecord, analyze, complete_questions, expected_verdicts,
-                                 load_runs, missing_verdicts, plot, question_scores, to_markdown, unanimous, vote_agreement)
+                                 load_runs, missing_verdicts, plot, question_scores, read_records, to_markdown, unanimous,
+                                 vote_agreement)
 
 
 def verdict(qid, story, condition, biased, order, side=None, score=1.0, status="judged", informed=None):
@@ -217,3 +219,19 @@ def test_judge_and_exploitation_effects_sum_to_the_penalty(tmp_path):
             est(f"H2: {protocol} penalty"))
     assert est("H3 from the judge effect") + est("H3 from the exploitation effect") == pytest.approx(
         est("H3: consultancy penalty - debate penalty"))
+
+
+def test_read_records_reads_plain_or_gzip_and_refuses_both(tmp_path):
+    lines = '{"a": 1}\n{"a": 2}\n'
+    (tmp_path / "plain").mkdir()
+    (tmp_path / "plain" / "verdicts.jsonl").write_text(lines)
+    (tmp_path / "packed").mkdir()
+    (tmp_path / "packed" / "verdicts.jsonl.gz").write_bytes(gzip.compress(lines.encode()))
+    assert read_records(tmp_path / "plain", "verdicts") == read_records(tmp_path / "packed", "verdicts") == [{"a": 1}, {"a": 2}]
+
+    (tmp_path / "packed" / "verdicts.jsonl").write_text(lines)
+    with pytest.raises(ValueError, match="both"):
+        read_records(tmp_path / "packed", "verdicts")
+    with pytest.raises(FileNotFoundError):
+        read_records(tmp_path / "plain", "transcripts")
+    assert read_records(tmp_path / "plain", "transcripts", required=False) == []

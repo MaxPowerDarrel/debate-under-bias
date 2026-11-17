@@ -1,9 +1,9 @@
 """Accuracy, bias penalties, story-bootstrap intervals, the bias check, and the main figure.
 
-    uv run python -m debate_bias.analyze --runs results/final/main --out results/final/analysis
+    uv run python -m debate_bias.analyze --runs results/transcripts/final --out results/final/analysis
 
 `--runs` takes one or more run folders and merges their `verdicts.jsonl` and
-`transcripts.jsonl`, so cells written by different runs (as in the pilot) can be analyzed
+`transcripts.jsonl` (or the gzip copies, `*.jsonl.gz`, that the repo publishes), so cells written by different runs (as in the pilot) can be analyzed
 together. Two runs holding the same verdict is an error. The analysis makes no API calls.
 
 **Cells.** There are eight: naive, expert, and consultancy and debate in three versions.
@@ -61,6 +61,7 @@ verdict.
 """
 
 import argparse
+import gzip
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -102,20 +103,36 @@ class DuplicateRecord(ValueError):
     pass
 
 
+def read_records(run: Path, name: str, required: bool = True) -> list[dict]:
+    """Read `<name>.jsonl`, or the gzip copy `<name>.jsonl.gz` that the repo publishes.
+
+    A folder holding both is an error, because the two could disagree.
+    """
+    plain, packed = run / f"{name}.jsonl", run / f"{name}.jsonl.gz"
+    if plain.exists() and packed.exists():
+        raise ValueError(f"{run} has both {plain.name} and {packed.name}; keep one")
+    if packed.exists():
+        text = gzip.decompress(packed.read_bytes()).decode()
+    elif plain.exists():
+        text = plain.read_text()
+    elif required:
+        raise FileNotFoundError(f"{run} has neither {plain.name} nor {packed.name}")
+    else:
+        return []
+    return [json.loads(line) for line in text.splitlines()]
+
+
 def load_runs(run_dirs: list[Path]) -> tuple[list[dict], list[dict]]:
     """Merge every run's verdicts and transcripts, refusing duplicates."""
     verdicts, transcripts, seen_v, seen_t = [], [], {}, {}
     for run in map(Path, run_dirs):
-        for line in (run / "verdicts.jsonl").read_text().splitlines():
-            v = json.loads(line)
+        for v in read_records(run, "verdicts"):
             key = (verdict_cell(v), v["question_id"], v["order"], v["consultant_side"])
             if key in seen_v:
                 raise DuplicateRecord(f"Verdict {key} is in both {seen_v[key]} and {run}")
             seen_v[key] = run
             verdicts.append(v)
-        path = run / "transcripts.jsonl"
-        for line in path.read_text().splitlines() if path.exists() else []:
-            t = json.loads(line)
+        for t in read_records(run, "transcripts", required=False):
             key = (t["protocol"], t.get("biased", False), t["question_id"], t["consultant_side"])
             if key in seen_t:
                 raise DuplicateRecord(f"Transcript {key} is in both {seen_t[key]} and {run}")

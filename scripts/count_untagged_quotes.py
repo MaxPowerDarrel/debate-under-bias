@@ -11,15 +11,15 @@ out, because most are answer wording or scare quotes ("Unknown"), not evidence. 
 quote is "lost" if it doesn't appear inside any verified quote in the same transcript, so
 the judge never saw that line verified. Reads saved files only, so it costs nothing.
 
-    uv run python scripts/count_untagged_quotes.py results/final/final
+    uv run python scripts/count_untagged_quotes.py results/transcripts/final
 """
 
 import argparse
-import json
 import re
 from collections import defaultdict
 from pathlib import Path
 
+from debate_bias.analyze import read_records
 from debate_bias.data import load_questions
 from debate_bias.quotes import is_in_story, normalize
 
@@ -42,15 +42,14 @@ def is_lost(quote: str, verified: list[str]) -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("run", type=Path, help="Run folder holding transcripts.jsonl")
+    parser.add_argument("run", type=Path, help="Run folder holding transcripts.jsonl or transcripts.jsonl.gz")
     parser.add_argument("--split", default="dev")
     args = parser.parse_args()
 
     stories = {q.question_id: normalize(q.story) for q in load_questions(args.split)[0]}
     stats = defaultdict(lambda: defaultdict(int))
     unclosed = 0
-    for line in (args.run / "transcripts.jsonl").open():
-        t = json.loads(line)
+    for t in read_records(args.run, "transcripts"):
         story = stories[t["question_id"]]
         verified = [q for turn in t["turns"] for q in turn["verified_quotes"]]
         for turn in t["turns"]:

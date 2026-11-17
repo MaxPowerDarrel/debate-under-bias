@@ -3,7 +3,7 @@
 Reads saved run files only, so it costs nothing. The rules are in
 `src/debate_bias/error_review.py` and `PREREGISTRATION.md`, Section 7.
 
-    uv run python scripts/sample_errors.py --runs results/final/main --out results/final/analysis
+    uv run python scripts/sample_errors.py --runs results/transcripts/final --out results/final/error_review
 """
 
 import argparse
