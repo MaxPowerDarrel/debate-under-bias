@@ -185,3 +185,15 @@ Entry format:
 ## 2026-11-15: Ignore the raw final-run records
 - **Claude:** Added `results/final/final/` to `.gitignore` so the raw run records can't be committed by accident, and committed the change.
 - **Darrel:** Asked for the folder to be ignored. Decision on publishing the transcripts: not recorded.
+
+## 2026-11-15: Draft codes for the 30 error-review transcripts
+- **Claude:** Wrote a scratch script that produced one reading file per drawn transcript (story, question, transcript as the judge saw it, and every biased-judge vote). Three subagents drafted codes with the Section 7 codebook, 10 items each. Claude checked some items by hand: item 16 in full, the rule-reliance evidence on items 01 and 26, the judge-misreads-tags claim on items 03, 13, and 22, and the wrong-order column against `error_review.json` (one fix). Collected everything in `results/final/error_review/codes_draft.md`, marked DRAFT, with notes on codebook gaps. No code, prompts, or configs changed, and no API calls.
+- **Darrel:** Asked for draft codes. His review of the codes: not recorded.
+
+## 2026-11-16: Count untagged story quotes across the final run (exploratory)
+- **Claude:** Wrote a scratch script (in the session scratchpad, not the repo) that finds quotes of 3+ words in plain quotation marks in every argument turn and checks them against the story with the verifier's own exact-match check. Result: 5,460 real story quotes were left untagged, against 26,085 verified tagged quotes. 3,799 of those 5,460 never appear verified elsewhere in their transcript. The rate is about the same on both sides in each protocol and highest in round 1. 4 turns had an unclosed `<quote>` tag. Checked a random sample of 12 matches by eye. No code, prompts, or configs changed, and no API calls.
+- **Darrel:** Asked for the count. Whether to report it, and whether to add the script to the repo: not recorded.
+
+## 2026-11-16: Move the untagged-quote count into scripts/
+- **Claude:** Moved the scratch script into `scripts/count_untagged_quotes.py`. It now takes the run folder as an argument and reports "lost" quotes (never verified elsewhere in the transcript) in place of all plain quotes, plus per-protocol rows. Added `tests/test_count_untagged_quotes.py` with 3 tests (192 pass). Reran it on the final run, and the totals match the earlier count. New: lost quotes are 15% of real story quotes in consultancy and 8% in debate. Committed the script, the test, and this log.
+- **Darrel:** Asked for the script to be moved into `scripts/` and committed.
