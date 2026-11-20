@@ -209,3 +209,11 @@ Entry format:
 ## 2026-11-17: Add data attribution to the README
 - **Claude:** Added a "Data and licensing" section to `README.md`. It credits QuALITY (Pang et al., 2022) under CC BY 4.0, lists the changes made to the questions (filters, two options), and states that the stories are US public-domain Project Gutenberg texts that appear only as short excerpts, with a note for readers outside the US and a no-affiliation line. The wording is Claude's. Committed and pushed.
 - **Darrel:** Asked for the attribution. Review of the wording: not recorded.
+
+## 2026-11-20: Update the README for the finished run
+- **Claude:** Rewrote `README.md`: new status line, a table of where the report, preregistration, results, figure, transcripts, and error-review files are, the headline results with what they do and don't show, commands to reproduce the analysis from the saved records, and a "Deviations from the plan" section (before the lock, after the lock, and the division of work). Rewrote the AI-use section from this log. The wording is Claude's.
+- **Darrel:** Asked for the update, and stated that Claude did more of the writing and drafting than planned because of time constraints and because he is still learning what good research looks like. Review of the wording: not recorded.
+
+## 2026-11-20: Add the draft error-review codes to the repo
+- **Claude:** Staged `results/final/error_review/codes_draft.md` (drafted on 2026-11-15) so it can be committed. Linked it from the README's "Where to find things" table and its "After the lock" deviations, both marked as a Claude draft that Darrel has not reviewed, and updated the layout table.
+- **Darrel:** Asked for the draft codes to be added to the repo and the README updated. His review of the codes: not recorded.
