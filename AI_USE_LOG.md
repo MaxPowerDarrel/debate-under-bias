@@ -217,3 +217,7 @@ Entry format:
 ## 2026-11-20: Add the draft error-review codes to the repo
 - **Claude:** Staged `results/final/error_review/codes_draft.md` (drafted on 2026-11-15) so it can be committed. Linked it from the README's "Where to find things" table and its "After the lock" deviations, both marked as a Claude draft that Darrel has not reviewed, and updated the layout table.
 - **Darrel:** Asked for the draft codes to be added to the repo and the README updated. His review of the codes: not recorded.
+
+## 2026-11-20: Commit the report draft
+- **Claude:** Committed `writeup/report.md` as it stood in the working tree, without editing it. The draft's own "Deviations and AI use" section says Claude (Claude Opus 5.5, in the Claude app) drafted it from the results files and the locked preregistration. That drafting session has no earlier entry in this log.
+- **Darrel:** Asked for the draft to be committed and pushed. His revisions to the draft: not recorded.
