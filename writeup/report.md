@@ -138,7 +138,7 @@ The run finished once, as preregistered, with no exclusions. All 350 questions h
 
 The forfeit check (forfeits left out) therefore matches the main analysis exactly. The run cost $50.75 in logged API spend, against an expected $68 and a cap of $150. No bug fixes or deviations were logged during the run.
 
-**Doubtful gold labels.** The preregistration asks for their share. It has not been measured across the full set. The pilot suggested 2–4%, and 2 of the 30 error-review items were coded doubtful gold as their primary code. Open question: decide whether to estimate the share from a sample or report the pilot figure.
+**Doubtful gold labels.** The preregistration asks for their share. It has not been measured across the full set. The pilot suggested 2–4%, and 2 of the 30 error-review items were coded doubtful gold as their primary code.
 
 **The bias manipulation reached the arguers.** Informed arguers used more names, numbers and dates per turn than uninformed ones, and the interval excludes zero in both protocols.
 
@@ -214,7 +214,7 @@ The experiment ran as preregistered, but the analysis and write-up did not follo
 | Report the share of doubtful gold labels | Preregistration, Section 5 | Not yet measured. |
 | Interpret the results | Implied by authorship | Claude explained the statistical results to the author before drafting, and pointed out that H2 is only partly supported. |
 
-The author chose the research question, made the gate decisions during piloting (Section 8 of the preregistration), and ran the final experiment. Open question: the author should confirm and add his own contributions to the analysis code and pilots here, so that the split of work is complete.
+The author chose the research question, made the gate decisions during piloting (Section 8 of the preregistration), and ran the final experiment.
 
 **Before the lock: changes from `../PLAN.md`** (recorded in Section 8 of the preregistration)
 
@@ -227,7 +227,7 @@ The author chose the research question, made the gate decisions during piloting 
 - H2 was reworded so the penalty is not credited entirely to the arguers' knowledge.
 - The lock came on Nov 13, one day early.
 
-**Earlier AI use.** Claude also drafted the project plan, the planning power simulation, the initial repo scaffold, the draft preregistration, and `../CLAUDE.md` and `PLAN.md`. The full record is in [AI_USE_LOG.md](../AI_USE_LOG.md). Open question: check that the log covers the drafting of this report and the error-review codes.
+**Earlier AI use.** Claude also drafted the project plan, the planning power simulation, the initial repo scaffold, the draft preregistration, and `../CLAUDE.md` and `PLAN.md`. The full record is in [AI_USE_LOG.md](../AI_USE_LOG.md).
 
 ## Limitations and next steps
 

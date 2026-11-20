@@ -221,3 +221,7 @@ Entry format:
 ## 2026-11-20: Commit the report draft
 - **Claude:** Committed `writeup/report.md` as it stood in the working tree, without editing it. The draft's own "Deviations and AI use" section says Claude (Claude Opus 5.5, in the Claude app) drafted it from the results files and the locked preregistration. That drafting session has no earlier entry in this log.
 - **Darrel:** Asked for the draft to be committed and pushed. His revisions to the draft: not recorded.
+
+## 2026-11-20: Remove the open-question notes from the report
+- **Claude:** Deleted the three "Open question" sentences from `writeup/report.md` (doubtful-label share, the author's contributions, and the log check). No other text changed.
+- **Darrel:** Asked for the notes to be removed.
